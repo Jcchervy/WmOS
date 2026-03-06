@@ -93,9 +93,25 @@
         .data-table tr:hover { background: #f5f5f5; }
         
         /* 网络关系 */
-        .topology-container { background: #fafafa; border-radius: 8px; padding: 40px 20px; min-height: 400px; }
+        .network-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 500px; }
+        .topology-container { background: #fafafa; border-radius: 8px; padding: 24px; min-height: 500px; }
         .topology-tree { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .tree-level { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+        .tree-level { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+        .detail-panel { background: white; border: 1px solid #e8e8e8; border-radius: 8px; padding: 24px; display: none; }
+        .detail-panel.active { display: block; animation: fadeIn 0.3s; }
+        .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #e8e8e8; }
+        .detail-title { font-size: 16px; font-weight: 600; color: #333; }
+        .detail-count { font-size: 13px; color: #888; background: #f5f5f5; padding: 4px 12px; border-radius: 12px; }
+        .detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+        .detail-card { background: #fafafa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+        .detail-card:hover { border-color: #1890ff; background: #e6f4ff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15); }
+        .detail-card-icon { font-size: 28px; margin-bottom: 8px; }
+        .detail-card-name { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 4px; }
+        .detail-card-type { font-size: 12px; color: #888; margin-bottom: 8px; }
+        .detail-card-status { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px; border-radius: 10px; }
+        .detail-card-status.running { background: #f6ffed; color: #52c41a; }
+        .detail-card-status.stopped { background: #f5f5f5; color: #888; }
+        .detail-card-status.warning { background: #fffbe6; color: #faad14; }
         .tree-node { background: white; border-radius: 8px; padding: 16px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.2s; border: 2px solid transparent; min-width: 160px; text-align: center; }
         .tree-node:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
         .tree-node.current { border-color: #1890ff; background: #e6f4ff; }
@@ -265,16 +281,19 @@
                     </div>
                 </div>
                 
-                <!-- 监测指标预览 -->
-                <div style="margin-top: 24px;">
-                    <div class="section-title" style="margin-bottom: 16px;">监测指标预览</div>
+                <!-- 监测指标 -->
+                <div style="margin-top: 32px;">
+                    <div class="section-title" style="margin-bottom: 16px;">📊 监测指标</div>
                     <div class="metrics-grid">
                         <div class="metric-item">
                             <div class="metric-header">
                                 <span class="metric-name">出厂压力</span>
-                                <span class="metric-status normal">✓ 正常</span>
+                                <div class="metric-actions">
+                                    <button class="btn-sm" onclick="editMetric('pressure')">✏️</button>
+                                </div>
                             </div>
                             <div class="metric-value">0.35<span class="metric-unit">MPa</span></div>
+                            <div class="metric-status normal">✓ 正常</div>
                             <div class="metric-info">
                                 <span>阈值：0.25-0.45 MPa</span>
                                 <span>🕐 10:40</span>
@@ -283,9 +302,12 @@
                         <div class="metric-item">
                             <div class="metric-header">
                                 <span class="metric-name">出厂流量</span>
-                                <span class="metric-status normal">✓ 正常</span>
+                                <div class="metric-actions">
+                                    <button class="btn-sm" onclick="editMetric('flow')">✏️</button>
+                                </div>
                             </div>
                             <div class="metric-value">1250<span class="metric-unit">m³/h</span></div>
+                            <div class="metric-status normal">✓ 正常</div>
                             <div class="metric-info">
                                 <span>阈值：800-1500 m³/h</span>
                                 <span>🕐 10:40</span>
@@ -294,9 +316,12 @@
                         <div class="metric-item">
                             <div class="metric-header">
                                 <span class="metric-name">余氯</span>
-                                <span class="metric-status normal">✓ 正常</span>
+                                <div class="metric-actions">
+                                    <button class="btn-sm" onclick="editMetric('chlorine')">✏️</button>
+                                </div>
                             </div>
                             <div class="metric-value">0.45<span class="metric-unit">mg/L</span></div>
+                            <div class="metric-status normal">✓ 正常</div>
                             <div class="metric-info">
                                 <span>阈值：0.3-0.8 mg/L</span>
                                 <span>🕐 10:40</span>
@@ -305,11 +330,42 @@
                         <div class="metric-item">
                             <div class="metric-header">
                                 <span class="metric-name">浊度</span>
-                                <span class="metric-status normal">✓ 正常</span>
+                                <div class="metric-actions">
+                                    <button class="btn-sm" onclick="editMetric('turbidity')">✏️</button>
+                                </div>
                             </div>
                             <div class="metric-value">0.15<span class="metric-unit">NTU</span></div>
+                            <div class="metric-status normal">✓ 正常</div>
                             <div class="metric-info">
                                 <span>阈值：≤1.0 NTU</span>
+                                <span>🕐 10:40</span>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">pH 值</span>
+                                <div class="metric-actions">
+                                    <button class="btn-sm" onclick="editMetric('ph')">✏️</button>
+                                </div>
+                            </div>
+                            <div class="metric-value">7.2</div>
+                            <div class="metric-status normal">✓ 正常</div>
+                            <div class="metric-info">
+                                <span>阈值：6.5-8.5</span>
+                                <span>🕐 10:40</span>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">今日水量</span>
+                                <div class="metric-actions">
+                                    <button class="btn-sm" onclick="editMetric('daily')">✏️</button>
+                                </div>
+                            </div>
+                            <div class="metric-value">8500<span class="metric-unit">m³</span></div>
+                            <div class="metric-status normal">✓ 正常</div>
+                            <div class="metric-info">
+                                <span>日均：8000 m³</span>
                                 <span>🕐 10:40</span>
                             </div>
                         </div>
@@ -469,75 +525,49 @@
             <!-- Tab 4: 网络关系 -->
             <div id="network-tab" class="tab-pane">
                 <div class="section-title">关联关系</div>
-                <div class="topology-container">
-                    <div class="topology-tree">
-                        <div class="tree-level">
-                            <div class="tree-node current">
-                                <div class="tree-node-icon">🏭</div>
-                                <div class="tree-node-name">第一水厂</div>
-                                <div class="tree-node-type">水厂</div>
-                                <div class="tree-node-status running">🟢 运行中</div>
+                <div class="network-layout">
+                    <!-- 左侧拓扑图 -->
+                    <div class="topology-container">
+                        <div class="topology-tree">
+                            <div class="tree-level">
+                                <div class="tree-node current">
+                                    <div class="tree-node-icon">🏭</div>
+                                    <div class="tree-node-name">第一水厂</div>
+                                    <div class="tree-node-type">水厂</div>
+                                    <div class="tree-node-status running">🟢 运行中</div>
+                                </div>
+                            </div>
+                            <div class="tree-connector"></div>
+                            <div class="tree-branch" style="width: 400px;"></div>
+                            <div class="tree-level">
+                                <div class="tree-node category" onclick="selectCategory('equipment', '设备', 5)">
+                                    <div class="tree-node-icon">🔧</div>
+                                    <div class="tree-node-name">设备</div>
+                                    <div class="tree-node-count">5 个</div>
+                                </div>
+                                <div class="tree-node category" onclick="selectCategory('monitoring', '管网测点', 3)">
+                                    <div class="tree-node-icon">📊</div>
+                                    <div class="tree-node-name">管网测点</div>
+                                    <div class="tree-node-count">3 个</div>
+                                </div>
+                                <div class="tree-node" onclick="selectCategory('org', '组织', 1)">
+                                    <div class="tree-node-icon">🏢</div>
+                                    <div class="tree-node-name">生产部</div>
+                                    <div class="tree-node-type">部门</div>
+                                    <div class="tree-node-status running">🟢 正常</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="tree-connector"></div>
-                        <div class="tree-branch" style="width: 600px;"></div>
-                        <div class="tree-level">
-                            <div class="tree-node category" onclick="toggleCategory('equipment')">
-                                <div class="tree-node-icon">🔧</div>
-                                <div class="tree-node-name">设备</div>
-                                <div class="tree-node-count">5 个</div>
-                            </div>
-                            <div class="tree-node category" onclick="toggleCategory('monitoring')">
-                                <div class="tree-node-icon">📊</div>
-                                <div class="tree-node-name">管网测点</div>
-                                <div class="tree-node-count">3 个</div>
-                            </div>
-                            <div class="tree-node" onclick="navigateTo('ORG-001')">
-                                <div class="tree-node-icon">🏢</div>
-                                <div class="tree-node-name">生产部</div>
-                                <div class="tree-node-type">部门</div>
-                                <div class="tree-node-status running">🟢 正常</div>
-                            </div>
+                    </div>
+                    
+                    <!-- 右侧明细卡片 -->
+                    <div id="detailPanel" class="detail-panel">
+                        <div class="detail-header">
+                            <div class="detail-title" id="detailTitle">📊 设备明细</div>
+                            <div class="detail-count" id="detailCount">共 5 个对象</div>
                         </div>
-                        <div class="tree-level" id="equipment-list" style="display: none;">
-                            <div class="tree-node" onclick="navigateTo('EQ-001')">
-                                <div class="tree-node-icon">💧</div>
-                                <div class="tree-node-name">进水泵#1</div>
-                                <div class="tree-node-type">水泵</div>
-                                <div class="tree-node-status running">🟢 运行中</div>
-                            </div>
-                            <div class="tree-node" onclick="navigateTo('EQ-002')">
-                                <div class="tree-node-icon">💧</div>
-                                <div class="tree-node-name">进水泵#2</div>
-                                <div class="tree-node-type">水泵</div>
-                                <div class="tree-node-status stopped">⚫ 停止</div>
-                            </div>
-                            <div class="tree-node" onclick="navigateTo('EQ-003')">
-                                <div class="tree-node-icon">💧</div>
-                                <div class="tree-node-name">送水泵#1</div>
-                                <div class="tree-node-type">水泵</div>
-                                <div class="tree-node-status running">🟢 运行中</div>
-                            </div>
-                        </div>
-                        <div class="tree-level" id="monitoring-list" style="display: none;">
-                            <div class="tree-node" onclick="navigateTo('MP-001')">
-                                <div class="tree-node-icon">📈</div>
-                                <div class="tree-node-name">管网压力 P1</div>
-                                <div class="tree-node-type">压力测点</div>
-                                <div class="tree-node-status running">🟢 0.32 MPa</div>
-                            </div>
-                            <div class="tree-node" onclick="navigateTo('MP-002')">
-                                <div class="tree-node-icon">📈</div>
-                                <div class="tree-node-name">管网压力 P2</div>
-                                <div class="tree-node-type">压力测点</div>
-                                <div class="tree-node-status running">🟢 0.30 MPa</div>
-                            </div>
-                            <div class="tree-node" onclick="navigateTo('MP-003')">
-                                <div class="tree-node-icon">📈</div>
-                                <div class="tree-node-name">管网压力 P3</div>
-                                <div class="tree-node-type">压力测点</div>
-                                <div class="tree-node-status warning">🟡 0.22 MPa</div>
-                            </div>
+                        <div class="detail-grid" id="detailGrid">
+                            <!-- 动态生成 -->
                         </div>
                     </div>
                 </div>
@@ -1174,10 +1204,74 @@
             tbody.innerHTML = html;
         }
         
-        // 切换分类
-        function toggleCategory(category) {
-            const list = document.getElementById(category + '-list');
-            list.style.display = list.style.display === 'none' ? 'flex' : 'none';
+        // 选择分类
+        let selectedCategory = null;
+        
+        function selectCategory(categoryId, categoryName, count) {
+            selectedCategory = categoryId;
+            
+            // 显示右侧面板
+            const panel = document.getElementById('detailPanel');
+            panel.classList.add('active');
+            
+            // 更新标题
+            document.getElementById('detailTitle').textContent = getCategoryIcon(categoryId) + ' ' + categoryName + '明细';
+            document.getElementById('detailCount').textContent = '共 ' + count + ' 个对象';
+            
+            // 生成明细卡片
+            const grid = document.getElementById('detailGrid');
+            grid.innerHTML = getDetailCards(categoryId);
+            
+            // 更新拓扑图选中状态
+            document.querySelectorAll('.tree-node').forEach(node => node.classList.remove('current'));
+            event.currentTarget.classList.add('current');
+        }
+        
+        // 获取分类图标
+        function getCategoryIcon(categoryId) {
+            const icons = {
+                'equipment': '🔧',
+                'monitoring': '📊',
+                'org': '🏢'
+            };
+            return icons[categoryId] || '📋';
+        }
+        
+        // 获取明细卡片 HTML
+        function getDetailCards(categoryId) {
+            const data = {
+                'equipment': [
+                    { id: 'EQ-001', name: '进水泵#1', type: '水泵', status: 'running', statusText: '运行中' },
+                    { id: 'EQ-002', name: '进水泵#2', type: '水泵', status: 'stopped', statusText: '停止' },
+                    { id: 'EQ-003', name: '送水泵#1', type: '水泵', status: 'running', statusText: '运行中' },
+                    { id: 'EQ-004', name: '送水泵#2', type: '水泵', status: 'running', statusText: '运行中' },
+                    { id: 'EQ-005', name: '加氯机', type: '加药设备', status: 'running', statusText: '运行中' }
+                ],
+                'monitoring': [
+                    { id: 'MP-001', name: '管网压力 P1', type: '压力测点', status: 'running', statusText: '0.32 MPa' },
+                    { id: 'MP-002', name: '管网压力 P2', type: '压力测点', status: 'running', statusText: '0.30 MPa' },
+                    { id: 'MP-003', name: '管网压力 P3', type: '压力测点', status: 'warning', statusText: '0.22 MPa' }
+                ],
+                'org': [
+                    { id: 'ORG-001', name: '生产部', type: '部门', status: 'running', statusText: '正常' }
+                ]
+            };
+            
+            const items = data[categoryId] || [];
+            return items.map(item => `
+                <div class="detail-card" onclick="navigateTo('${item.id}')">
+                    <div class="detail-card-icon">${getCategoryIcon(categoryId)}</div>
+                    <div class="detail-card-name">${item.name}</div>
+                    <div class="detail-card-type">${item.type}</div>
+                    <div class="detail-card-status ${item.status}">${getStatusIcon(item.status)} ${item.statusText}</div>
+                </div>
+            `).join('');
+        }
+        
+        // 获取状态图标
+        function getStatusIcon(status) {
+            const icons = { 'running': '🟢', 'stopped': '⚫', 'warning': '🟡' };
+            return icons[status] || '⚪';
         }
         
         // 导航到实体
