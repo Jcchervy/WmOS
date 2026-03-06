@@ -93,7 +93,8 @@
         .data-table tr:hover { background: #f5f5f5; }
         
         /* 网络关系 */
-        .network-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 500px; }
+        .network-layout { display: grid; grid-template-columns: 1fr 0fr; gap: 0; min-height: 500px; transition: all 0.3s; }
+        .network-layout.has-detail { grid-template-columns: 1fr 1fr; gap: 24px; }
         .topology-container { background: #fafafa; border-radius: 8px; padding: 24px; min-height: 500px; }
         .topology-tree { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         .tree-level { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
@@ -203,10 +204,8 @@
                 <div style="display: flex; align-items: center; gap: 16px;">
                     <button class="btn btn-outline" onclick="goBack()" style="padding: 6px 12px; font-size: 16px;">← 返回</button>
                     <div>
-                        <h1>🏭 第一水厂</h1>
+                        <h1 style="margin-bottom: 8px;">🏭 第一水厂 <span class="status-badge"><span class="status-dot"></span>运行中</span></h1>
                         <div class="header-meta">
-                            <span>实体类型：水厂</span>
-                            <span class="status-badge"><span class="status-dot"></span>运行中</span>
                             <span>最后更新：<span id="lastUpdate">2026-03-06 14:30</span></span>
                         </div>
                     </div>
@@ -287,12 +286,20 @@
                 <!-- 监测指标 -->
                 <div style="margin-top: 32px;">
                     <div class="section-title" style="margin-bottom: 16px;">📊 监测指标</div>
-                    <div class="metrics-grid">
+                    <div class="metrics-toolbar">
+                        <div class="view-toggle">
+                            <button class="view-btn active" onclick="switchMetricsView('card')">📊 卡片</button>
+                            <button class="view-btn" onclick="switchMetricsView('list')">📋 列表</button>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="addNewMetricFromBasic()">➕ 添加指标</button>
+                    </div>
+                    <div class="metrics-grid" id="metricsCardView">
                         <div class="metric-item">
                             <div class="metric-header">
                                 <span class="metric-name">出厂压力</span>
                                 <div class="metric-actions">
                                     <button class="btn-sm" onclick="editMetric('pressure')">✏️</button>
+                                    <button class="btn-sm" onclick="deleteMetric('pressure')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
                                 </div>
                             </div>
                             <div class="metric-value">0.35<span class="metric-unit">MPa</span></div>
@@ -307,6 +314,7 @@
                                 <span class="metric-name">出厂流量</span>
                                 <div class="metric-actions">
                                     <button class="btn-sm" onclick="editMetric('flow')">✏️</button>
+                                    <button class="btn-sm" onclick="deleteMetric('flow')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
                                 </div>
                             </div>
                             <div class="metric-value">1250<span class="metric-unit">m³/h</span></div>
@@ -321,6 +329,7 @@
                                 <span class="metric-name">余氯</span>
                                 <div class="metric-actions">
                                     <button class="btn-sm" onclick="editMetric('chlorine')">✏️</button>
+                                    <button class="btn-sm" onclick="deleteMetric('chlorine')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
                                 </div>
                             </div>
                             <div class="metric-value">0.45<span class="metric-unit">mg/L</span></div>
@@ -335,6 +344,7 @@
                                 <span class="metric-name">浊度</span>
                                 <div class="metric-actions">
                                     <button class="btn-sm" onclick="editMetric('turbidity')">✏️</button>
+                                    <button class="btn-sm" onclick="deleteMetric('turbidity')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
                                 </div>
                             </div>
                             <div class="metric-value">0.15<span class="metric-unit">NTU</span></div>
@@ -349,6 +359,7 @@
                                 <span class="metric-name">pH 值</span>
                                 <div class="metric-actions">
                                     <button class="btn-sm" onclick="editMetric('ph')">✏️</button>
+                                    <button class="btn-sm" onclick="deleteMetric('ph')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
                                 </div>
                             </div>
                             <div class="metric-value">7.2</div>
@@ -363,6 +374,7 @@
                                 <span class="metric-name">今日水量</span>
                                 <div class="metric-actions">
                                     <button class="btn-sm" onclick="editMetric('daily')">✏️</button>
+                                    <button class="btn-sm" onclick="deleteMetric('daily')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
                                 </div>
                             </div>
                             <div class="metric-value">8500<span class="metric-unit">m³</span></div>
@@ -372,6 +384,77 @@
                                 <span>🕐 10:40</span>
                             </div>
                         </div>
+                    </div>
+                    <div class="table-container" id="metricsListView" style="display: none;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>指标名称</th>
+                                    <th>当前值</th>
+                                    <th>单位</th>
+                                    <th>状态</th>
+                                    <th>阈值范围</th>
+                                    <th>更新时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>出厂压力</td>
+                                    <td>0.35</td>
+                                    <td>MPa</td>
+                                    <td><span class="metric-status normal">正常</span></td>
+                                    <td>0.25 - 0.45</td>
+                                    <td>10:40</td>
+                                    <td><button class="btn-sm" onclick="editMetric('pressure')">✏️</button> <button class="btn-sm" onclick="deleteMetric('pressure')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button></td>
+                                </tr>
+                                <tr>
+                                    <td>出厂流量</td>
+                                    <td>1250</td>
+                                    <td>m³/h</td>
+                                    <td><span class="metric-status normal">正常</span></td>
+                                    <td>800 - 1500</td>
+                                    <td>10:40</td>
+                                    <td><button class="btn-sm" onclick="editMetric('flow')">✏️</button> <button class="btn-sm" onclick="deleteMetric('flow')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button></td>
+                                </tr>
+                                <tr>
+                                    <td>余氯</td>
+                                    <td>0.45</td>
+                                    <td>mg/L</td>
+                                    <td><span class="metric-status normal">正常</span></td>
+                                    <td>0.3 - 0.8</td>
+                                    <td>10:40</td>
+                                    <td><button class="btn-sm" onclick="editMetric('chlorine')">✏️</button> <button class="btn-sm" onclick="deleteMetric('chlorine')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button></td>
+                                </tr>
+                                <tr>
+                                    <td>浊度</td>
+                                    <td>0.15</td>
+                                    <td>NTU</td>
+                                    <td><span class="metric-status normal">正常</span></td>
+                                    <td>0 - 1.0</td>
+                                    <td>10:40</td>
+                                    <td><button class="btn-sm" onclick="editMetric('turbidity')">✏️</button> <button class="btn-sm" onclick="deleteMetric('turbidity')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button></td>
+                                </tr>
+                                <tr>
+                                    <td>pH 值</td>
+                                    <td>7.2</td>
+                                    <td>-</td>
+                                    <td><span class="metric-status normal">正常</span></td>
+                                    <td>6.5 - 8.5</td>
+                                    <td>10:40</td>
+                                    <td><button class="btn-sm" onclick="editMetric('ph')">✏️</button> <button class="btn-sm" onclick="deleteMetric('ph')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button></td>
+                                </tr>
+                                <tr>
+                                    <td>今日水量</td>
+                                    <td>8500</td>
+                                    <td>m³</td>
+                                    <td><span class="metric-status normal">正常</span></td>
+                                    <td>日均 8000</td>
+                                    <td>10:40</td>
+                                    <td><button class="btn-sm" onclick="editMetric('daily')">✏️</button> <button class="btn-sm" onclick="deleteMetric('daily')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -388,6 +471,24 @@
                         <button class="time-range-btn" onclick="setTimeRange('7d')">7 天</button>
                         <button class="time-range-btn" onclick="setTimeRange('30d')">30 天</button>
                         <button class="time-range-btn" onclick="setTimeRange('custom')">📅 自定义</button>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div style="font-size: 13px; color: #666;">显示指标：</div>
+                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" checked onchange="toggleMetricDisplay('pressure')" style="accent-color: #1890ff;"> 压力
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" checked onchange="toggleMetricDisplay('flow')" style="accent-color: #1890ff;"> 流量
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" checked onchange="toggleMetricDisplay('chlorine')" style="accent-color: #1890ff;"> 余氯
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" checked onchange="toggleMetricDisplay('turbidity')" style="accent-color: #1890ff;"> 浊度
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" checked onchange="toggleMetricDisplay('ph')" style="accent-color: #1890ff;"> pH
+                        </label>
                     </div>
                     <div class="view-toggle">
                         <button class="view-btn active" onclick="switchDataView('chart')">📊 曲线</button>
@@ -527,60 +628,41 @@
             <div id="reports-tab" class="tab-pane">
                 <div class="section-title">综合报表</div>
                 <div class="report-filters">
-                    <select class="time-range-btn" style="padding: 8px 12px; border-radius: 4px;">
+                    <select class="time-range-btn" style="padding: 8px 12px; border-radius: 4px;" id="reportYear">
                         <option>2026 年</option>
                         <option>2025 年</option>
                     </select>
-                    <select class="time-range-btn" style="padding: 8px 12px; border-radius: 4px;">
+                    <select class="time-range-btn" style="padding: 8px 12px; border-radius: 4px;" id="reportMonth">
                         <option>3 月</option>
                         <option>2 月</option>
                         <option>1 月</option>
                     </select>
-                    <button class="btn btn-primary" onclick="generateReport()">生成报表</button>
+                    <button class="btn btn-primary" onclick="generateReport()">查询</button>
                     <button class="btn btn-outline" style="border-color: #d9d9d9; color: #333;" onclick="exportReport()">📥 导出 Excel</button>
                 </div>
                 <div class="report-type-selector">
-                    <button class="time-range-btn active">日报</button>
-                    <button class="time-range-btn">月报</button>
-                    <button class="time-range-btn">年报</button>
+                    <button class="time-range-btn active" onclick="switchReportType('daily')">日报（按小时）</button>
+                    <button class="time-range-btn" onclick="switchReportType('monthly')">月报（按天）</button>
+                    <button class="time-range-btn" onclick="switchReportType('yearly')">年报（按月）</button>
                 </div>
-                <div class="report-grid">
-                    <div class="report-card">
-                        <div class="report-card-title">📊 水量统计</div>
-                        <div style="font-size: 13px; color: #666; line-height: 2;">
-                            <div>日供水量：<strong>8,500 m³</strong></div>
-                            <div>月累计：<strong>245,000 m³</strong></div>
-                            <div>年累计：<strong>2,850,000 m³</strong></div>
-                            <div>日均：<strong>8,200 m³</strong></div>
-                        </div>
-                    </div>
-                    <div class="report-card">
-                        <div class="report-card-title">⚡ 电耗统计</div>
-                        <div style="font-size: 13px; color: #666; line-height: 2;">
-                            <div>日电耗：<strong>3,825 kWh</strong></div>
-                            <div>月累计：<strong>110,250 kWh</strong></div>
-                            <div>吨水电耗：<strong>0.45 kWh/m³</strong></div>
-                            <div>峰谷比：<strong>3.2:1</strong></div>
-                        </div>
-                    </div>
-                    <div class="report-card">
-                        <div class="report-card-title">🧪 水质统计</div>
-                        <div style="font-size: 13px; color: #666; line-height: 2;">
-                            <div>余氯均值：<strong>0.45 mg/L</strong></div>
-                            <div>浊度均值：<strong>0.15 NTU</strong></div>
-                            <div>pH 均值：<strong>7.2</strong></div>
-                            <div>合格率：<strong>100%</strong></div>
-                        </div>
-                    </div>
-                    <div class="report-card">
-                        <div class="report-card-title">💰 成本统计</div>
-                        <div style="font-size: 13px; color: #666; line-height: 2;">
-                            <div>日电费：<strong>¥3,060</strong></div>
-                            <div>吨水成本：<strong>¥0.36</strong></div>
-                            <div>月累计：<strong>¥88,200</strong></div>
-                            <div>药耗：<strong>¥420</strong></div>
-                        </div>
-                    </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead id="reportTableHead">
+                            <tr>
+                                <th>时间</th>
+                                <th>出厂压力 (MPa)</th>
+                                <th>出厂流量 (m³/h)</th>
+                                <th>余氯 (mg/L)</th>
+                                <th>浊度 (NTU)</th>
+                                <th>pH</th>
+                                <th>水量 (m³)</th>
+                                <th>电耗 (kWh)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
@@ -588,44 +670,51 @@
             <div id="alerts-tab" class="tab-pane">
                 <div class="section-title">报警记录</div>
                 <div class="alert-tabs">
-                    <button class="alert-tab active" onclick="switchAlertView('current')">🔴 当前报警 (2)</button>
+                    <button class="alert-tab active" onclick="switchAlertView('current')">🔴 当前报警</button>
                     <button class="alert-tab" onclick="switchAlertView('history')">📜 历史报警</button>
+                    <select class="time-range-btn" style="padding: 6px 12px; border-radius: 4px; margin-left: auto;">
+                        <option>全部级别</option>
+                        <option>严重</option>
+                        <option>警告</option>
+                        <option>提示</option>
+                    </select>
                 </div>
                 
                 <div id="currentAlerts">
-                    <div class="alert-list">
-                        <div class="alert-item">
-                            <div class="alert-icon">⚠️</div>
-                            <div class="alert-content">
-                                <div class="alert-title">管网压力 P3 偏低</div>
-                                <div class="alert-desc">当前值 0.22 MPa，低于阈值 0.25 MPa</div>
-                                <div class="alert-meta">
-                                    <span>🕐 2026-03-06 10:35</span>
-                                    <span>📍 管网测点 P3</span>
-                                    <span>👤 未确认</span>
-                                </div>
-                            </div>
-                            <div class="alert-actions">
-                                <button class="btn-sm" onclick="acknowledgeAlert('A001')">✓ 确认</button>
-                                <button class="btn-sm" onclick="viewAlertDetail('A001')">📄 详情</button>
-                            </div>
-                        </div>
-                        <div class="alert-item warning">
-                            <div class="alert-icon">🟡</div>
-                            <div class="alert-content">
-                                <div class="alert-title">自用水率偏高</div>
-                                <div class="alert-desc">当前值 3.2%，高于正常范围 3.0%</div>
-                                <div class="alert-meta">
-                                    <span>🕐 2026-03-06 09:00</span>
-                                    <span>📍 第一水厂</span>
-                                    <span>👤 未确认</span>
-                                </div>
-                            </div>
-                            <div class="alert-actions">
-                                <button class="btn-sm" onclick="acknowledgeAlert('A002')">✓ 确认</button>
-                                <button class="btn-sm" onclick="viewAlertDetail('A002')">📄 详情</button>
-                            </div>
-                        </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>报警时间</th>
+                                    <th>报警名称</th>
+                                    <th>报警内容</th>
+                                    <th>级别</th>
+                                    <th>位置</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="background: #fff1f0;">
+                                    <td>2026-03-06 10:35</td>
+                                    <td><strong>管网压力 P3 偏低</strong></td>
+                                    <td>当前值 0.22 MPa，低于阈值 0.25 MPa</td>
+                                    <td><span style="color: #ff4d4f; font-weight: 600;">严重</span></td>
+                                    <td>管网测点 P3</td>
+                                    <td><span class="alert-status-badge unacknowledged">未确认</span></td>
+                                    <td><button class="btn-sm" onclick="acknowledgeAlert('A001')">✓ 确认</button> <button class="btn-sm" onclick="viewAlertDetail('A001')">详情</button></td>
+                                </tr>
+                                <tr style="background: #fffbe6;">
+                                    <td>2026-03-06 09:00</td>
+                                    <td><strong>自用水率偏高</strong></td>
+                                    <td>当前值 3.2%，高于正常范围 3.0%</td>
+                                    <td><span style="color: #faad14; font-weight: 600;">警告</span></td>
+                                    <td>第一水厂</td>
+                                    <td><span class="alert-status-badge unacknowledged">未确认</span></td>
+                                    <td><button class="btn-sm" onclick="acknowledgeAlert('A002')">✓ 确认</button> <button class="btn-sm" onclick="viewAlertDetail('A002')">详情</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 
@@ -638,13 +727,44 @@
                                     <th>报警名称</th>
                                     <th>报警内容</th>
                                     <th>级别</th>
-                                    <th>状态</th>
+                                    <th>位置</th>
                                     <th>确认时间</th>
                                     <th>恢复时间</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="historyAlertTableBody"></tbody>
+                            <tbody id="historyAlertTableBody">
+                                <tr>
+                                    <td>2026-03-06 08:15</td>
+                                    <td>出厂压力超高</td>
+                                    <td>当前值 0.48 MPa，高于阈值 0.45 MPa</td>
+                                    <td><span style="color: #ff4d4f; font-weight: 600;">严重</span></td>
+                                    <td>出厂压力</td>
+                                    <td>08:18</td>
+                                    <td>08:45</td>
+                                    <td><button class="btn-sm" onclick="viewAlertDetail('H001')">详情</button></td>
+                                </tr>
+                                <tr>
+                                    <td>2026-03-06 07:30</td>
+                                    <td>余氯偏低</td>
+                                    <td>当前值 0.28 mg/L，低于阈值 0.30 mg/L</td>
+                                    <td><span style="color: #faad14; font-weight: 600;">警告</span></td>
+                                    <td>余氯</td>
+                                    <td>07:35</td>
+                                    <td>07:50</td>
+                                    <td><button class="btn-sm" onclick="viewAlertDetail('H002')">详情</button></td>
+                                </tr>
+                                <tr>
+                                    <td>2026-03-05 23:45</td>
+                                    <td>流量异常</td>
+                                    <td>瞬时流量 1580 m³/h，超出正常范围</td>
+                                    <td><span style="color: #faad14; font-weight: 600;">警告</span></td>
+                                    <td>出厂流量</td>
+                                    <td>23:50</td>
+                                    <td>00:15</td>
+                                    <td><button class="btn-sm" onclick="viewAlertDetail('H003')">详情</button></td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -883,20 +1003,50 @@
         
         // 切换 Tab
         function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach((tab, index) => {
+            document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
                 if (tab.onclick.toString().includes(tabName)) tab.classList.add('active');
             });
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
             document.getElementById(tabName + '-tab').classList.add('active');
             
-            // 如果是监测数据 Tab，初始化图表
             if (tabName === 'data') {
-                setTimeout(() => {
-                    if (mainChart) mainChart.resize();
-                    else initMainChart();
-                }, 100);
+                setTimeout(() => { if (mainChart) mainChart.resize(); else initMainChart(); }, 100);
             }
+            if (tabName === 'reports') {
+                generateReportData('daily');
+            }
+        }
+        
+        // 切换指标视图
+        function switchMetricsView(view) {
+            const cardView = document.getElementById('metricsCardView');
+            const listView = document.getElementById('metricsListView');
+            const buttons = document.querySelectorAll('#basic-tab .view-btn');
+            
+            if (view === 'card') {
+                cardView.style.display = 'grid';
+                listView.style.display = 'none';
+                buttons[0].classList.add('active');
+                buttons[1].classList.remove('active');
+            } else {
+                cardView.style.display = 'none';
+                listView.style.display = 'block';
+                buttons[0].classList.remove('active');
+                buttons[1].classList.add('active');
+            }
+        }
+        
+        // 添加指标（从基础信息）
+        function addNewMetricFromBasic() {
+            addNewMetric();
+        }
+        
+        // 切换指标显示
+        let displayedMetrics = { pressure: true, flow: true, chlorine: true, turbidity: true, ph: true };
+        function toggleMetricDisplay(metric) {
+            displayedMetrics[metric] = !displayedMetrics[metric];
+            if (mainChart) updateMainChart();
         }
         
         // 编辑基础信息
@@ -1108,19 +1258,27 @@
         function selectCategory(categoryId, categoryName, count) {
             selectedCategory = categoryId;
             
-            // 显示右侧面板
+            const layout = document.querySelector('.network-layout');
             const panel = document.getElementById('detailPanel');
-            panel.classList.add('active');
             
-            // 更新标题
+            // 切换布局
+            if (panel.classList.contains('active')) {
+                // 如果已经显示，切换布局
+                layout.classList.toggle('has-detail');
+                panel.classList.toggle('active');
+            } else {
+                // 首次显示
+                layout.classList.add('has-detail');
+                panel.classList.add('active');
+            }
+            
+            // 更新标题和卡片
             document.getElementById('detailTitle').textContent = getCategoryIcon(categoryId) + ' ' + categoryName + '明细';
             document.getElementById('detailCount').textContent = '共 ' + count + ' 个对象';
-            
-            // 生成明细卡片
             const grid = document.getElementById('detailGrid');
             grid.innerHTML = getDetailCards(categoryId);
             
-            // 更新拓扑图选中状态
+            // 更新选中状态
             document.querySelectorAll('.tree-node').forEach(node => node.classList.remove('current'));
             event.currentTarget.classList.add('current');
         }
@@ -1225,9 +1383,66 @@
             alert('报警详情：' + alertId);
         }
         
+        // 切换报表类型
+        function switchReportType(type) {
+            document.querySelectorAll('.report-type-selector .time-range-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            generateReportData(type);
+        }
+        
+        // 生成报表数据
+        function generateReportData(type) {
+            const tbody = document.getElementById('reportTableBody');
+            let html = '';
+            
+            if (type === 'daily') {
+                // 日报 - 按小时显示
+                for (let i = 0; i < 24; i++) {
+                    const pressure = (0.35 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                    const flow = Math.round(1250 + (Math.random() - 0.5) * 100);
+                    const chlorine = (0.45 + (Math.random() - 0.5) * 0.1).toFixed(2);
+                    const turbidity = (0.15 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                    const ph = (7.2 + (Math.random() - 0.5) * 0.3).toFixed(1);
+                    const water = Math.round(350 + (Math.random() - 0.5) * 50);
+                    const power = Math.round(160 + (Math.random() - 0.5) * 20);
+                    html += `<tr><td>${i.toString().padStart(2, '0')}:00</td><td>${pressure}</td><td>${flow}</td><td>${chlorine}</td><td>${turbidity}</td><td>${ph}</td><td>${water}</td><td>${power}</td></tr>`;
+                }
+            } else if (type === 'monthly') {
+                // 月报 - 按天显示
+                const days = new Date(2026, 2, 0).getDate();
+                for (let i = 1; i <= days; i++) {
+                    const pressure = (0.35 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                    const flow = Math.round(1250 + (Math.random() - 0.5) * 100);
+                    const chlorine = (0.45 + (Math.random() - 0.5) * 0.1).toFixed(2);
+                    const turbidity = (0.15 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                    const ph = (7.2 + (Math.random() - 0.5) * 0.3).toFixed(1);
+                    const water = Math.round(8500 + (Math.random() - 0.5) * 500);
+                    const power = Math.round(3825 + (Math.random() - 0.5) * 200);
+                    html += `<tr><td>3 月${i}日</td><td>${pressure}</td><td>${flow}</td><td>${chlorine}</td><td>${turbidity}</td><td>${ph}</td><td>${water}</td><td>${power}</td></tr>`;
+                }
+            } else if (type === 'yearly') {
+                // 年报 - 按月显示
+                const months = ['1 月', '2 月', '3 月', '4 月', '5 月', '6 月', '7 月', '8 月', '9 月', '10 月', '11 月', '12 月'];
+                months.forEach((month, i) => {
+                    const pressure = (0.35 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                    const flow = Math.round(1250 + (Math.random() - 0.5) * 100);
+                    const chlorine = (0.45 + (Math.random() - 0.5) * 0.1).toFixed(2);
+                    const turbidity = (0.15 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                    const ph = (7.2 + (Math.random() - 0.5) * 0.3).toFixed(1);
+                    const water = Math.round(255000 + (Math.random() - 0.5) * 15000);
+                    const power = Math.round(114750 + (Math.random() - 0.5) * 6000);
+                    html += `<tr><td>${month}</td><td>${pressure}</td><td>${flow}</td><td>${chlorine}</td><td>${turbidity}</td><td>${ph}</td><td>${water}</td><td>${power}</td></tr>`;
+                });
+            }
+            
+            tbody.innerHTML = html;
+        }
+        
         // 生成报表
         function generateReport() {
-            alert('正在生成报表...');
+            const type = document.querySelector('.report-type-selector .active').textContent.includes('日报') ? 'daily' : document.querySelector('.report-type-selector .active').textContent.includes('月报') ? 'monthly' : 'yearly';
+            generateReportData(type);
+            alert('报表已更新！');
         }
         
         // 导出报表
