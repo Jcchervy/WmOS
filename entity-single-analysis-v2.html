@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实体单点分析 - 第一水厂</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .header-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            font-size: 13px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #52c41a;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #1890ff;
+        }
+        
+        .btn-primary:hover {
+            background: #f0f0f0;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        /* 标签页 */
+        .tabs {
+            background: white;
+            padding: 0 24px;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            gap: 0;
+        }
+        
+        .tab {
+            padding: 14px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .tab:hover {
+            color: #1890ff;
+        }
+        
+        .tab.active {
+            color: #1890ff;
+            border-bottom-color: #1890ff;
+            font-weight: 500;
+        }
+        
+        /* 内容区 */
+        .content {
+            background: white;
+            border-radius: 0 0 8px 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            padding-left: 12px;
+            border-left: 4px solid #1890ff;
+        }
+        
+        /* 基本信息卡片 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .info-card {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #e8e8e8;
+        }
+        
+        .info-card-label {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        
+        .info-card-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        /* 监测数据 */
+        .monitoring-section {
+            margin-bottom: 24px;
+        }
+        
+        .time-range-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .time-range-btn {
+            padding: 6px 14px;
+            border: 1px solid #d9d9d9;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .time-range-btn:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+        
+        .time-range-btn.active {
+            background: #1890ff;
+            border-color: #1890ff;
+            color: white;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f4ff 100%);
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #bae0ff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .metric-card.selected {
+            border: 2px solid #1890ff;
+            background: #e6f4ff;
+        }
+        
+        .metric-name {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1890ff;
+            margin-bottom: 4px;
+        }
+        
+        .metric-unit {
+            font-size: 12px;
+            color: #888;
+            margin-left: 4px;
+        }
+        
+        .metric-status {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .metric-status.normal { color: #52c41a; }
+        .metric-status.warning { color: #faad14; }
+        .metric-status.critical { color: #ff4d4f; }
+        
+        .metric-chart {
+            height: 60px;
+            margin-top: 8px;
+        }
+        
+        /* 视图切换 */
+        .view-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: #fafafa;
+            border-radius: 6px;
+        }
+        
+        .view-toggle-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .view-btn {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .view-btn.active {
+            background: #1890ff;
+            border-color: #1890ff;
+            color: white;
+        }
+        
+        .multi-select-tip {
+            font-size: 13px;
+            color: #888;
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .main-chart {
+            height: 400px;
+            width: 100%;
+        }
+        
+        /* 表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        
+        .data-table th {
+            background: #fafafa;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+        }
+        
+        /* 指标卡片 */
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .indicator-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e8e8e8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .indicator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .indicator-name {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .indicator-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .indicator-status.normal {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+        
+        .indicator-status.warning {
+            background: #fffbe6;
+            color: #faad14;
+        }
+        
+        .indicator-status.critical {
+            background: #fff1f0;
+            color: #ff4d4f;
+        }
+        
+        .indicator-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .indicator-formula {
+            font-size: 12px;
+            color: #888;
+            background: #fafafa;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        
+        /* 拓扑图 */
+        .topology-container {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 40px 20px;
+            overflow: auto;
+        }
+        
+        .topology-tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .tree-level {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        
+        .tree-node {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            min-width: 140px;
+            text-align: center;
+        }
+        
+        .tree-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        
+        .tree-node.current {
+            border-color: #1890ff;
+            background: #e6f4ff;
+        }
+        
+        .tree-node.category {
+            background: #f0f5ff;
+            border: 2px dashed #91d5ff;
+        }
+        
+        .tree-node.category:hover {
+            border-style: solid;
+        }
+        
+        .tree-node-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .tree-node-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .tree-node-type {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .tree-node-count {
+            background: #1890ff;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-top: 6px;
+            display: inline-block;
+        }
+        
+        .tree-node-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+        
+        .tree-node-status.running { color: #52c41a; }
+        .tree-node-status.stopped { color: #888; }
+        .tree-node-status.warning { color: #faad14; }
+        
+        .tree-connector {
+            width: 2px;
+            height: 20px;
+            background: #d9d9d9;
+            margin: 0 auto;
+        }
+        
+        .tree-branch {
+            height: 2px;
+            background: #d9d9d9;
+            position: relative;
+        }
+        
+        .tree-branch::before,
+        .tree-branch::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: #d9d9d9;
+            top: 0;
+        }
+        
+        .tree-branch::before { left: 0; }
+        .tree-branch::after { right: 0; }
+        
+        /* 告警列表 */
+        .alert-list {
+            margin-top: 16px;
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #fff1f0;
+            border: 1px solid #ffa39e;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .alert-icon { font-size: 20px; }
+        
+        .alert-content { flex: 1; }
+        
+        .alert-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #cf1322;
+            margin-bottom: 4px;
+        }
+        
+        .alert-desc {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .alert-time {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        /* 工具栏 */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .toolbar-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .refresh-btn:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+        
+        .refresh-btn.spinning .refresh-icon {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 图例 */
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 6px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .legend-item:hover {
+            background: #f0f0f0;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .header-meta {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-left">
+                <h1>🏭 第一水厂</h1>
+                <div class="header-meta">
+                    <span>实体类型：水厂</span>
+                    <span class="status-badge">
+                        <span class="status-dot"></span>
+                        运行中
+                    </span>
+                    <span>最后更新：<span id="lastUpdate">2026-03-06 10:40</span></span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline" onclick="alert('返回')">← 返回</button>
+                <button class="btn btn-primary" onclick="refreshData()">⟳ 刷新</button>
+                <button class="btn btn-outline" onclick="alert('导出功能')">📥 导出</button>
+                <button class="btn btn-outline" onclick="alert('更多选项')">⋮ 更多</button>
+            </div>
+        </div>
+        
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab active">📋 基本信息</div>
+            <div class="tab">📊 监测数据</div>
+            <div class="tab">📈 指标</div>
+            <div class="tab">🔗 关联拓扑</div>
+            <div class="tab">📜 告警</div>
+        </div>
+        
+        <!-- 内容区 -->
+        <div class="content">
+            <!-- 基本信息 -->
+            <h2 class="section-title">基本信息</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-label">名称</div>
+                    <div class="info-card-value">第一水厂</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">编码</div>
+                    <div class="info-card-value">W-001</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">位置</div>
+                    <div class="info-card-value">桐乡市 XX 路 XX 号</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">状态</div>
+                    <div class="info-card-value">🟢 运行中</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">建设日期</div>
+                    <div class="info-card-value">2010-05</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">设计规模</div>
+                    <div class="info-card-value">10 万吨/日</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">工艺类型</div>
+                    <div class="info-card-value">常规处理</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">归属组织</div>
+                    <div class="info-card-value">生产部</div>
+                </div>
+            </div>
+            
+            <!-- 监测数据 -->
+            <h2 class="section-title">监测数据</h2>
+            <div class="monitoring-section">
+                <div class="time-range-selector">
+                    <button class="time-range-btn" data-range="realtime">实时</button>
+                    <button class="time-range-btn active" data-range="1h">1 小时</button>
+                    <button class="time-range-btn" data-range="24h">24 小时</button>
+                    <button class="time-range-btn" data-range="7d">7 天</button>
+                    <button class="time-range-btn" data-range="30d">30 天</button>
+                    <button class="time-range-btn" data-range="custom">自定义</button>
+                </div>
+                
+                <!-- 指标选择 -->
+                <div class="view-toggle">
+                    <div class="view-toggle-left">
+                        <button class="view-btn active" id="chartViewBtn" onclick="switchView('chart')">
+                            📊 图表
+                        </button>
+                        <button class="view-btn" id="tableViewBtn" onclick="switchView('table')">
+                            📋 表格
+                        </button>
+                        <span class="multi-select-tip">💡 点击指标卡片可选择多个指标进行叠加分析</span>
+                    </div>
+                    <button class="refresh-btn" onclick="clearSelection()">
+                        清空选择
+                    </button>
+                </div>
+                
+                <!-- 指标卡片 -->
+                <div class="metrics-grid">
+                    <div class="metric-card" data-metric="pressure" onclick="toggleMetric('pressure')">
+                        <div class="metric-name">出厂压力</div>
+                        <div class="metric-value">0.35<span class="metric-unit">MPa</span></div>
+                        <div class="metric-status normal">✓ 正常</div>
+                        <div class="metric-chart" id="chart-pressure"></div>
+                    </div>
+                    <div class="metric-card" data-metric="flow" onclick="toggleMetric('flow')">
+                        <div class="metric-name">出厂瞬时流量</div>
+                        <div class="metric-value">1250<span class="metric-unit">m³/h</span></div>
+                        <div class="metric-status normal">✓ 正常</div>
+                        <div class="metric-chart" id="chart-flow"></div>
+                    </div>
+                    <div class="metric-card" data-metric="daily" onclick="toggleMetric('daily')">
+                        <div class="metric-name">今日水量</div>
+                        <div class="metric-value">8500<span class="metric-unit">m³</span></div>
+                        <div class="metric-status normal">✓ 正常</div>
+                        <div class="metric-chart" id="chart-daily"></div>
+                    </div>
+                    <div class="metric-card" data-metric="chlorine" onclick="toggleMetric('chlorine')">
+                        <div class="metric-name">出厂余氯</div>
+                        <div class="metric-value">0.45<span class="metric-unit">mg/L</span></div>
+                        <div class="metric-status normal">✓ 正常</div>
+                        <div class="metric-chart" id="chart-chlorine"></div>
+                    </div>
+                    <div class="metric-card" data-metric="turbidity" onclick="toggleMetric('turbidity')">
+                        <div class="metric-name">出厂浊度</div>
+                        <div class="metric-value">0.15<span class="metric-unit">NTU</span></div>
+                        <div class="metric-status normal">✓ 正常</div>
+                        <div class="metric-chart" id="chart-turbidity"></div>
+                    </div>
+                    <div class="metric-card" data-metric="ph" onclick="toggleMetric('ph')">
+                        <div class="metric-name">出厂 pH</div>
+                        <div class="metric-value">7.2</div>
+                        <div class="metric-status normal">✓ 正常</div>
+                        <div class="metric-chart" id="chart-ph"></div>
+                    </div>
+                </div>
+                
+                <!-- 主图表区 -->
+                <div class="chart-container" id="chartContainer">
+                    <div class="chart-title">
+                        <span>📈 趋势分析</span>
+                        <span id="selectedMetricsTip" style="font-size: 12px; color: #888; font-weight: normal;"></span>
+                    </div>
+                    <div id="mainChart" class="main-chart"></div>
+                    <div class="chart-legend" id="chartLegend"></div>
+                </div>
+                
+                <!-- 表格区（默认隐藏） -->
+                <div class="table-container" id="tableContainer" style="display: none;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>出厂压力 (MPa)</th>
+                                <th>出厂流量 (m³/h)</th>
+                                <th>今日水量 (m³)</th>
+                                <th>余氯 (mg/L)</th>
+                                <th>浊度 (NTU)</th>
+                                <th>pH</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 指标 -->
+            <h2 class="section-title">分析指标</h2>
+            <div class="indicators-grid">
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <span class="indicator-name">供水负荷率</span>
+                        <span class="indicator-status normal">正常</span>
+                    </div>
+                    <div class="indicator-value">85%</div>
+                    <div class="indicator-formula">实际供水量 / 设计规模 × 100%</div>
+                </div>
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <span class="indicator-name">自用水率</span>
+                        <span class="indicator-status warning">偏高</span>
+                    </div>
+                    <div class="indicator-value">3.2%</div>
+                    <div class="indicator-formula">自用水量 / 总处理水量 × 100%</div>
+                </div>
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <span class="indicator-name">吨水电耗</span>
+                        <span class="indicator-status normal">正常</span>
+                    </div>
+                    <div class="indicator-value">0.45 kWh/m³</div>
+                    <div class="indicator-formula">总耗电量 / 供水量</div>
+                </div>
+            </div>
+            
+            <!-- 关联拓扑 -->
+            <h2 class="section-title">关联拓扑</h2>
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <button class="refresh-btn" onclick="toggleTopology()">
+                        <span class="refresh-icon">🌳</span>
+                        展开/收起
+                    </button>
+                </div>
+            </div>
+            <div class="topology-container">
+                <div class="topology-tree" id="topologyTree">
+                    <!-- 当前实体 -->
+                    <div class="tree-level">
+                        <div class="tree-node current">
+                            <div class="tree-node-icon">🏭</div>
+                            <div class="tree-node-name">第一水厂</div>
+                            <div class="tree-node-type">水厂</div>
+                            <div class="tree-node-status running">🟢 运行中</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 连接线 -->
+                    <div class="tree-connector"></div>
+                    <div class="tree-branch" style="width: 600px;"></div>
+                    
+                    <!-- 第二层：分类节点 -->
+                    <div class="tree-level">
+                        <div class="tree-node category" onclick="toggleCategory('equipment')">
+                            <div class="tree-node-icon">🔧</div>
+                            <div class="tree-node-name">设备</div>
+                            <div class="tree-node-count">5 个</div>
+                        </div>
+                        <div class="tree-node category" onclick="toggleCategory('monitoring')">
+                            <div class="tree-node-icon">📊</div>
+                            <div class="tree-node-name">管网测点</div>
+                            <div class="tree-node-count">3 个</div>
+                        </div>
+                        <div class="tree-node" onclick="navigateTo('ORG-001')">
+                            <div class="tree-node-icon">🏢</div>
+                            <div class="tree-node-name">生产部</div>
+                            <div class="tree-node-type">部门</div>
+                            <div class="tree-node-status running">🟢 正常</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 设备明细（默认收起） -->
+                    <div class="tree-level" id="equipment-list" style="display: none;">
+                        <div class="tree-node" onclick="navigateTo('EQ-001')">
+                            <div class="tree-node-icon">💧</div>
+                            <div class="tree-node-name">进水泵#1</div>
+                            <div class="tree-node-type">水泵</div>
+                            <div class="tree-node-status running">🟢 运行中</div>
+                        </div>
+                        <div class="tree-node" onclick="navigateTo('EQ-002')">
+                            <div class="tree-node-icon">💧</div>
+                            <div class="tree-node-name">进水泵#2</div>
+                            <div class="tree-node-type">水泵</div>
+                            <div class="tree-node-status stopped">⚫ 停止</div>
+                        </div>
+                        <div class="tree-node" onclick="navigateTo('EQ-003')">
+                            <div class="tree-node-icon">💧</div>
+                            <div class="tree-node-name">送水泵#1</div>
+                            <div class="tree-node-type">水泵</div>
+                            <div class="tree-node-status running">🟢 运行中</div>
+                        </div>
+                        <div class="tree-node" onclick="navigateTo('EQ-004')">
+                            <div class="tree-node-icon">💧</div>
+                            <div class="tree-node-name">送水泵#2</div>
+                            <div class="tree-node-type">水泵</div>
+                            <div class="tree-node-status running">🟢 运行中</div>
+                        </div>
+                        <div class="tree-node" onclick="navigateTo('EQ-005')">
+                            <div class="tree-node-icon">🧪</div>
+                            <div class="tree-node-name">加氯机</div>
+                            <div class="tree-node-type">加药设备</div>
+                            <div class="tree-node-status running">🟢 运行中</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 管网测点明细（默认收起） -->
+                    <div class="tree-level" id="monitoring-list" style="display: none;">
+                        <div class="tree-node" onclick="navigateTo('MP-001')">
+                            <div class="tree-node-icon">📈</div>
+                            <div class="tree-node-name">管网压力 P1</div>
+                            <div class="tree-node-type">压力测点</div>
+                            <div class="tree-node-status running">🟢 0.32 MPa</div>
+                        </div>
+                        <div class="tree-node" onclick="navigateTo('MP-002')">
+                            <div class="tree-node-icon">📈</div>
+                            <div class="tree-node-name">管网压力 P2</div>
+                            <div class="tree-node-type">压力测点</div>
+                            <div class="tree-node-status running">🟢 0.30 MPa</div>
+                        </div>
+                        <div class="tree-node" onclick="navigateTo('MP-003')">
+                            <div class="tree-node-icon">📈</div>
+                            <div class="tree-node-name">管网压力 P3</div>
+                            <div class="tree-node-type">压力测点</div>
+                            <div class="tree-node-status warning">🟡 0.22 MPa</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 告警 -->
+            <h2 class="section-title">当前告警</h2>
+            <div class="alert-list">
+                <div class="alert-item">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <div class="alert-title">管网压力 P3 偏低</div>
+                        <div class="alert-desc">当前值 0.22 MPa，低于阈值 0.25 MPa</div>
+                    </div>
+                    <div class="alert-time">10:35</div>
+                </div>
+                <div class="alert-item" style="background: #fffbe6; border-color: #ffe58f;">
+                    <div class="alert-icon">🟡</div>
+                    <div class="alert-content">
+                        <div class="alert-title">自用水率偏高</div>
+                        <div class="alert-desc">当前值 3.2%，高于正常范围 3.0%</div>
+                    </div>
+                    <div class="alert-time">09:00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 全局变量
+        let selectedMetrics = ['pressure']; // 默认选中一个
+        let currentView = 'chart';
+        let mainChart = null;
+        
+        // 指标配置
+        const metricConfig = {
+            'pressure': { name: '出厂压力', unit: 'MPa', color: '#1890ff' },
+            'flow': { name: '出厂流量', unit: 'm³/h', color: '#52c41a' },
+            'daily': { name: '今日水量', unit: 'm³', color: '#722ed1' },
+            'chlorine': { name: '余氯', unit: 'mg/L', color: '#13c2c2' },
+            'turbidity': { name: '浊度', unit: 'NTU', color: '#fa8c16' },
+            'ph': { name: 'pH', unit: '', color: '#eb2f96' }
+        };
+        
+        // 模拟历史数据
+        function generateHistoricalData(metric, range) {
+            const points = range === '1h' ? 60 : range === '24h' ? 24 : range === '7d' ? 7 : 30;
+            const data = [];
+            let baseValue = 0;
+            
+            switch(metric) {
+                case 'pressure': baseValue = 0.35; break;
+                case 'flow': baseValue = 1250; break;
+                case 'daily': baseValue = 8500; break;
+                case 'chlorine': baseValue = 0.45; break;
+                case 'turbidity': baseValue = 0.15; break;
+                case 'ph': baseValue = 7.2; break;
+            }
+            
+            for (let i = 0; i < points; i++) {
+                const variation = (Math.random() - 0.5) * baseValue * 0.1;
+                data.push(parseFloat((baseValue + variation).toFixed(2)));
+            }
+            return data;
+        }
+        
+        // 生成时间标签
+        function generateTimeLabels(range) {
+            const points = range === '1h' ? 60 : range === '24h' ? 24 : range === '7d' ? 7 : 30;
+            const labels = [];
+            const now = new Date();
+            
+            for (let i = points - 1; i >= 0; i--) {
+                let time;
+                if (range === '1h') {
+                    time = new Date(now - i * 60000);
+                    labels.push(time.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'}));
+                } else if (range === '24h') {
+                    time = new Date(now - i * 3600000);
+                    labels.push(time.toLocaleTimeString('zh-CN', {hour: '2-digit'}));
+                } else if (range === '7d') {
+                    time = new Date(now - i * 86400000);
+                    labels.push(time.toLocaleDateString('zh-CN', {month: '2-digit', day:'2-digit'}));
+                } else {
+                    time = new Date(now - i * 86400000);
+                    labels.push(time.toLocaleDateString('zh-CN', {month: '2-digit', day:'2-digit'}));
+                }
+            }
+            return labels;
+        }
+        
+        // 初始化图表
+        function initMainChart() {
+            if (mainChart) {
+                mainChart.dispose();
+            }
+            mainChart = echarts.init(document.getElementById('mainChart'));
+            updateMainChart();
+        }
+        
+        // 更新主图表
+        function updateMainChart() {
+            const range = document.querySelector('.time-range-btn.active').dataset.range;
+            const timeLabels = generateTimeLabels(range);
+            
+            const series = selectedMetrics.map(metric => ({
+                name: metricConfig[metric].name,
+                type: 'line',
+                smooth: true,
+                data: generateHistoricalData(metric, range),
+                itemStyle: { color: metricConfig[metric].color },
+                lineStyle: { width: 3 },
+                showSymbol: false
+            }));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                legend: {
+                    show: false
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    top: '10%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: timeLabels,
+                    axisLabel: {
+                        rotate: range === '7d' || range === '30d' ? 45 : 0
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    scale: true
+                },
+                series: series
+            };
+            
+            mainChart.setOption(option);
+            updateLegend();
+        }
+        
+        // 更新图例
+        function updateLegend() {
+            const legend = document.getElementById('chartLegend');
+            legend.innerHTML = selectedMetrics.map(metric => `
+                <div class="legend-item" onclick="toggleMetric('${metric}')">
+                    <div class="legend-color" style="background: ${metricConfig[metric].color}"></div>
+                    <span>${metricConfig[metric].name}</span>
+                </div>
+            `).join('');
+        }
+        
+        // 切换指标选择
+        function toggleMetric(metric) {
+            const index = selectedMetrics.indexOf(metric);
+            const card = document.querySelector(`[data-metric="${metric}"]`);
+            
+            if (index > -1) {
+                if (selectedMetrics.length > 1) {
+                    selectedMetrics.splice(index, 1);
+                    card.classList.remove('selected');
+                }
+            } else {
+                selectedMetrics.push(metric);
+                card.classList.add('selected');
+            }
+            
+            updateSelectedTip();
+            if (currentView === 'chart') {
+                updateMainChart();
+            } else {
+                generateTable();
+            }
+        }
+        
+        // 更新选择提示
+        function updateSelectedTip() {
+            const tip = document.getElementById('selectedMetricsTip');
+            if (selectedMetrics.length === 1) {
+                tip.textContent = `已选择：${metricConfig[selectedMetrics[0]].name}`;
+            } else if (selectedMetrics.length > 1) {
+                tip.textContent = `已选择 ${selectedMetrics.length} 个指标进行叠加分析`;
+            } else {
+                tip.textContent = '请至少选择一个指标';
+            }
+        }
+        
+        // 清空选择
+        function clearSelection() {
+            document.querySelectorAll('.metric-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            selectedMetrics = [];
+            updateSelectedTip();
+        }
+        
+        // 切换视图
+        function switchView(view) {
+            currentView = view;
+            const chartBtn = document.getElementById('chartViewBtn');
+            const tableBtn = document.getElementById('tableViewBtn');
+            const chartContainer = document.getElementById('chartContainer');
+            const tableContainer = document.getElementById('tableContainer');
+            
+            if (view === 'chart') {
+                chartBtn.classList.add('active');
+                tableBtn.classList.remove('active');
+                chartContainer.style.display = 'block';
+                tableContainer.style.display = 'none';
+                updateMainChart();
+            } else {
+                chartBtn.classList.remove('active');
+                tableBtn.classList.add('active');
+                chartContainer.style.display = 'none';
+                tableContainer.style.display = 'block';
+                generateTable();
+            }
+        }
+        
+        // 生成表格数据
+        function generateTable() {
+            const tbody = document.getElementById('dataTableBody');
+            const range = document.querySelector('.time-range-btn.active').dataset.range;
+            const points = range === '1h' ? 10 : range === '24h' ? 12 : 7;
+            const now = new Date();
+            
+            let html = '';
+            for (let i = 0; i < points; i++) {
+                const time = new Date(now - i * (range === '1h' ? 60000 : range === '24h' ? 7200000 : 86400000));
+                const timeStr = time.toLocaleString('zh-CN');
+                
+                const pressure = (0.35 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                const flow = Math.round(1250 + (Math.random() - 0.5) * 100);
+                const daily = Math.round(8500 + (Math.random() - 0.5) * 500);
+                const chlorine = (0.45 + (Math.random() - 0.5) * 0.1).toFixed(2);
+                const turbidity = (0.15 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                const ph = (7.2 + (Math.random() - 0.5) * 0.3).toFixed(1);
+                
+                html += `
+                    <tr>
+                        <td>${timeStr}</td>
+                        <td>${pressure}</td>
+                        <td>${flow}</td>
+                        <td>${daily}</td>
+                        <td>${chlorine}</td>
+                        <td>${turbidity}</td>
+                        <td>${ph}</td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+        }
+        
+        // 初始化迷你图表
+        function initMiniChart(elementId, data, color) {
+            const chart = echarts.init(document.getElementById(elementId));
+            const option = {
+                grid: { top: 5, right: 5, bottom: 5, left: 5 },
+                xAxis: { type: 'category', data: data.map((_, i) => i), show: false },
+                yAxis: { type: 'value', show: false },
+                series: [{
+                    data: data,
+                    type: 'line',
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: { color: color, width: 2 },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: color + '40' },
+                            { offset: 1, color: color + '05' }
+                        ])
+                    }
+                }]
+            };
+            chart.setOption(option);
+            return chart;
+        }
+        
+        // 响应式图表
+        window.addEventListener('resize', () => {
+            if (mainChart) mainChart.resize();
+        });
+        
+        // 刷新数据
+        function refreshData() {
+            const btn = event.currentTarget;
+            btn.classList.add('spinning');
+            setTimeout(() => {
+                btn.classList.remove('spinning');
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('zh-CN', {
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit'
+                }).replace(/\//g, '-');
+                if (currentView === 'chart') {
+                    updateMainChart();
+                } else {
+                    generateTable();
+                }
+            }, 1000);
+        }
+        
+        // 切换拓扑图
+        function toggleTopology() {
+            const tree = document.getElementById('topologyTree');
+            tree.style.display = tree.style.display === 'none' ? 'flex' : 'none';
+        }
+        
+        // 切换分类展开/收起
+        function toggleCategory(category) {
+            const list = document.getElementById(category + '-list');
+            list.style.display = list.style.display === 'none' || list.style.display === '' ? 'flex' : 'none';
+        }
+        
+        // 跳转到实体详情
+        function navigateTo(entityId) {
+            alert('跳转到实体详情：' + entityId);
+        }
+        
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // 时间范围选择
+        document.querySelectorAll('.time-range-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.time-range-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                if (currentView === 'chart') {
+                    updateMainChart();
+                } else {
+                    generateTable();
+                }
+            });
+        });
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化迷你图表
+            const charts = {
+                'chart-pressure': initMiniChart('chart-pressure', [0.32, 0.33, 0.34, 0.35, 0.36, 0.35, 0.34, 0.35], '#1890ff'),
+                'chart-flow': initMiniChart('chart-flow', [1180, 1200, 1220, 1250, 1280, 1260, 1240, 1250], '#52c41a'),
+                'chart-daily': initMiniChart('chart-daily', [1000, 2200, 3500, 4800, 6100, 7400, 8200, 8500], '#722ed1'),
+                'chart-chlorine': initMiniChart('chart-chlorine', [0.42, 0.43, 0.44, 0.45, 0.46, 0.45, 0.44, 0.45], '#13c2c2'),
+                'chart-turbidity': initMiniChart('chart-turbidity', [0.18, 0.16, 0.15, 0.14, 0.15, 0.16, 0.15, 0.15], '#fa8c16'),
+                'chart-ph': initMiniChart('chart-ph', [7.1, 7.15, 7.18, 7.2, 7.22, 7.2, 7.18, 7.2], '#eb2f96')
+            };
+            
+            // 初始化主图表
+            initMainChart();
+            updateSelectedTip();
+        });
+    </script>
+</body>
+</html>
