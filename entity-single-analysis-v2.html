@@ -585,6 +585,60 @@
             color: #888;
         }
         
+        .alert-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 16px;
+        }
+        
+        .btn-sm {
+            padding: 4px 12px;
+            border: 1px solid #d9d9d9;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .btn-sm:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+        
+        .alert-status-badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        .alert-status-badge.acknowledged {
+            background: #e6f4ff;
+            color: #1890ff;
+        }
+        
+        .alert-status-badge.unacknowledged {
+            background: #fff1f0;
+            color: #ff4d4f;
+        }
+        
+        .alert-status-badge.recovered {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+        
+        .alert-level-critical {
+            border-left: 4px solid #ff4d4f;
+        }
+        
+        .alert-level-warning {
+            border-left: 4px solid #faad14;
+        }
+        
+        .alert-level-info {
+            border-left: 4px solid #1890ff;
+        }
+        
         /* 工具栏 */
         .toolbar {
             display: flex;
@@ -983,23 +1037,87 @@
             </div>
             
             <!-- 告警 -->
-            <h2 class="section-title">当前告警</h2>
-            <div class="alert-list">
-                <div class="alert-item">
-                    <div class="alert-icon">⚠️</div>
-                    <div class="alert-content">
-                        <div class="alert-title">管网压力 P3 偏低</div>
-                        <div class="alert-desc">当前值 0.22 MPa，低于阈值 0.25 MPa</div>
-                    </div>
-                    <div class="alert-time">10:35</div>
+            <h2 class="section-title">告警信息</h2>
+            
+            <!-- 告警视图切换 -->
+            <div class="view-toggle">
+                <div class="view-toggle-left">
+                    <button class="view-btn active" id="currentAlertBtn" onclick="switchAlertView('current')">
+                        🔴 当前告警
+                    </button>
+                    <button class="view-btn" id="historyAlertBtn" onclick="switchAlertView('history')">
+                        📜 历史告警
+                    </button>
                 </div>
-                <div class="alert-item" style="background: #fffbe6; border-color: #ffe58f;">
-                    <div class="alert-icon">🟡</div>
-                    <div class="alert-content">
-                        <div class="alert-title">自用水率偏高</div>
-                        <div class="alert-desc">当前值 3.2%，高于正常范围 3.0%</div>
+                <div class="toolbar-left">
+                    <select class="time-range-btn" id="historyTimeRange" onchange="loadHistoryAlerts()" style="padding: 6px 12px; border-radius: 4px;">
+                        <option value="7d">最近 7 天</option>
+                        <option value="30d">最近 30 天</option>
+                        <option value="90d">最近 90 天</option>
+                        <option value="all">全部</option>
+                    </select>
+                    <button class="refresh-btn" onclick="exportAlerts()">
+                        📥 导出
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 当前告警 -->
+            <div id="currentAlertsContainer">
+                <div class="alert-list">
+                    <div class="alert-item">
+                        <div class="alert-icon">⚠️</div>
+                        <div class="alert-content">
+                            <div class="alert-title">管网压力 P3 偏低</div>
+                            <div class="alert-desc">当前值 0.22 MPa，低于阈值 0.25 MPa</div>
+                        </div>
+                        <div class="alert-time">10:35</div>
+                        <div class="alert-actions">
+                            <button class="btn btn-sm" onclick="acknowledgeAlert('A001')">确认</button>
+                            <button class="btn btn-sm" onclick="viewAlertDetail('A001')">详情</button>
+                        </div>
                     </div>
-                    <div class="alert-time">09:00</div>
+                    <div class="alert-item" style="background: #fffbe6; border-color: #ffe58f;">
+                        <div class="alert-icon">🟡</div>
+                        <div class="alert-content">
+                            <div class="alert-title">自用水率偏高</div>
+                            <div class="alert-desc">当前值 3.2%，高于正常范围 3.0%</div>
+                        </div>
+                        <div class="alert-time">09:00</div>
+                        <div class="alert-actions">
+                            <button class="btn btn-sm" onclick="acknowledgeAlert('A002')">确认</button>
+                            <button class="btn btn-sm" onclick="viewAlertDetail('A002')">详情</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 16px; padding: 12px; background: #f0f5ff; border-radius: 6px; font-size: 13px; color: #666;">
+                    📊 当前共 <strong>2</strong> 条活跃告警，其中 <strong style="color: #ff4d4f;">1</strong> 条严重，<strong style="color: #faad14;">1</strong> 条警告
+                </div>
+            </div>
+            
+            <!-- 历史告警（默认隐藏） -->
+            <div id="historyAlertsContainer" style="display: none;">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>告警时间</th>
+                                <th>告警名称</th>
+                                <th>告警内容</th>
+                                <th>级别</th>
+                                <th>状态</th>
+                                <th>确认时间</th>
+                                <th>恢复时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyAlertTableBody">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 16px; padding: 12px; background: #f0f5ff; border-radius: 6px; font-size: 13px; color: #666;">
+                    📊 最近 7 天共 <strong>15</strong> 条告警，其中 <strong style="color: #ff4d4f;">3</strong> 条严重，<strong style="color: #faad14;">8</strong> 条警告，<strong style="color: #52c41a;">4</strong> 条提示
                 </div>
             </div>
         </div>
@@ -1324,6 +1442,110 @@
             });
         });
         
+        // 历史告警数据
+        const historyAlertsData = [
+            {
+                id: 'H001',
+                time: '2026-03-06 08:15',
+                name: '出厂压力超高',
+                desc: '当前值 0.48 MPa，高于阈值 0.45 MPa',
+                level: 'critical',
+                status: 'recovered',
+                ackTime: '08:18',
+                recoverTime: '08:45'
+            },
+            {
+                id: 'H002',
+                time: '2026-03-06 07:30',
+                name: '余氯偏低',
+                desc: '当前值 0.28 mg/L，低于阈值 0.30 mg/L',
+                level: 'warning',
+                status: 'recovered',
+                ackTime: '07:35',
+                recoverTime: '07:50'
+            },
+            {
+                id: 'H003',
+                time: '2026-03-05 23:45',
+                name: '流量异常',
+                desc: '瞬时流量 1580 m³/h，超出正常范围',
+                level: 'warning',
+                status: 'recovered',
+                ackTime: '23:50',
+                recoverTime: '00:15'
+            },
+            {
+                id: 'H004',
+                time: '2026-03-05 18:20',
+                name: 'pH 值异常',
+                desc: 'pH 值 6.3，低于正常范围 6.5-8.5',
+                level: 'critical',
+                status: 'recovered',
+                ackTime: '18:25',
+                recoverTime: '18:55'
+            },
+            {
+                id: 'H005',
+                time: '2026-03-05 14:10',
+                name: '浊度偏高',
+                desc: '浊度 1.2 NTU，高于阈值 1.0 NTU',
+                level: 'warning',
+                status: 'recovered',
+                ackTime: '14:15',
+                recoverTime: '14:40'
+            },
+            {
+                id: 'H006',
+                time: '2026-03-05 10:30',
+                name: '设备离线',
+                desc: '进水泵#2 通信中断',
+                level: 'critical',
+                status: 'recovered',
+                ackTime: '10:35',
+                recoverTime: '11:20'
+            },
+            {
+                id: 'H007',
+                time: '2026-03-04 22:15',
+                name: '夜间流量偏低',
+                desc: '流量 320 m³/h，低于夜间最小流量',
+                level: 'info',
+                status: 'recovered',
+                ackTime: '-',
+                recoverTime: '06:00'
+            },
+            {
+                id: 'H008',
+                time: '2026-03-04 16:40',
+                name: '电耗异常',
+                desc: '吨水电耗 0.58 kWh/m³，高于正常值',
+                level: 'warning',
+                status: 'recovered',
+                ackTime: '16:50',
+                recoverTime: '17:30'
+            },
+            {
+                id: 'H009',
+                time: '2026-03-04 09:20',
+                name: '管网压力 P2 偏低',
+                desc: '压力 0.24 MPa，低于阈值 0.25 MPa',
+                level: 'warning',
+                status: 'recovered',
+                ackTime: '09:25',
+                recoverTime: '09:50'
+            },
+            {
+                id: 'H010',
+                time: '2026-03-03 20:00',
+                name: '清水池液位低',
+                desc: '液位 2.1m，低于低液位阈值 2.5m',
+                level: 'critical',
+                status: 'recovered',
+                ackTime: '20:05',
+                recoverTime: '20:40'
+            }
+        ];
+        
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 初始化迷你图表
@@ -1339,7 +1561,89 @@
             // 初始化主图表
             initMainChart();
             updateSelectedTip();
+            
+            // 加载历史告警
+            loadHistoryAlerts();
         });
+        
+        // 切换告警视图
+        function switchAlertView(view) {
+            const currentBtn = document.getElementById('currentAlertBtn');
+            const historyBtn = document.getElementById('historyAlertBtn');
+            const currentContainer = document.getElementById('currentAlertsContainer');
+            const historyContainer = document.getElementById('historyAlertsContainer');
+            
+            if (view === 'current') {
+                currentBtn.classList.add('active');
+                historyBtn.classList.remove('active');
+                currentContainer.style.display = 'block';
+                historyContainer.style.display = 'none';
+            } else {
+                currentBtn.classList.remove('active');
+                historyBtn.classList.add('active');
+                currentContainer.style.display = 'none';
+                historyContainer.style.display = 'block';
+            }
+        }
+        
+        // 加载历史告警
+        function loadHistoryAlerts() {
+            const timeRange = document.getElementById('historyTimeRange').value;
+            const tbody = document.getElementById('historyAlertTableBody');
+            
+            // 根据时间范围过滤（这里简化处理，实际应该根据日期过滤）
+            let alerts = historyAlertsData;
+            if (timeRange === '7d') {
+                alerts = historyAlertsData.slice(0, 5);
+            } else if (timeRange === '30d') {
+                alerts = historyAlertsData.slice(0, 8);
+            }
+            
+            let html = '';
+            alerts.forEach(alert => {
+                const levelClass = `alert-level-${alert.level}`;
+                const statusClass = `alert-status-badge ${alert.status}`;
+                const statusText = alert.status === 'recovered' ? '已恢复' : alert.status === 'acknowledged' ? '已确认' : '未确认';
+                const levelText = alert.level === 'critical' ? '严重' : alert.level === 'warning' ? '警告' : '提示';
+                const levelColor = alert.level === 'critical' ? '#ff4d4f' : alert.level === 'warning' ? '#faad14' : '#1890ff';
+                
+                html += `
+                    <tr class="${levelClass}">
+                        <td>${alert.time}</td>
+                        <td><strong>${alert.name}</strong></td>
+                        <td>${alert.desc}</td>
+                        <td><span style="color: ${levelColor}; font-weight: 600;">${levelText}</span></td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>${alert.ackTime}</td>
+                        <td>${alert.recoverTime}</td>
+                        <td>
+                            <button class="btn btn-sm" onclick="viewAlertDetail('${alert.id}')">详情</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        // 确认告警
+        function acknowledgeAlert(alertId) {
+            if (confirm('确认处理这条告警吗？')) {
+                alert('告警已确认，工单已生成并发送给相关负责人。');
+            }
+        }
+        
+        // 查看告警详情
+        function viewAlertDetail(alertId) {
+            const alert = historyAlertsData.find(a => a.id === alertId) || { id: alertId, name: '当前告警', desc: '告警详情' };
+            alert(`告警详情：${alert.id}\n\n名称：${alert.name}\n描述：${alert.desc}\n\n完整详情功能开发中...`);
+        }
+        
+        // 导出告警
+        function exportAlerts() {
+            const timeRange = document.getElementById('historyTimeRange').value;
+            alert(`正在导出${timeRange === '7d' ? '最近 7 天' : timeRange === '30d' ? '最近 30 天' : '全部'}的告警数据...\n\n将生成 Excel 文件，包含所有告警记录、确认时间、恢复时间等信息。`);
+        }
     </script>
 </body>
 </html>
