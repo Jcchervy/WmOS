@@ -214,7 +214,10 @@
             <div id="basic-tab" class="tab-pane active">
                 <div class="section-title">
                     <span>基本信息</span>
-                    <button class="btn btn-primary btn-edit" onclick="editBasicInfo()">✏️ 编辑</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-primary btn-edit" onclick="editBasicInfo()">✏️ 编辑资料</button>
+                        <button class="btn btn-primary btn-edit" onclick="editMetrics()">📊 管理指标</button>
+                    </div>
                 </div>
                 <div class="info-grid">
                     <div class="info-card">
@@ -252,12 +255,63 @@
                 </div>
                 
                 <div class="map-container">
-                    <div class="map-header">📍 地图位置</div>
+                    <div class="map-header">📍 地图位置 <button class="btn-sm" onclick="editMapLocation()" style="margin-left: 8px;">✏️ 编辑</button></div>
                     <div class="map-wrapper">
                         <div style="text-align: center;">
                             <div style="font-size: 48px; margin-bottom: 16px;">🗺️</div>
                             <div>地图集成区域</div>
-                            <div style="font-size: 12px; margin-top: 8px; color: #888;">支持高德/百度/Google 地图</div>
+                            <div style="font-size: 12px; margin-top: 8px; color: #888;">经纬度：120.55, 30.63 | 支持高德/百度/Google 地图</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 监测指标预览 -->
+                <div style="margin-top: 24px;">
+                    <div class="section-title" style="margin-bottom: 16px;">监测指标预览</div>
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">出厂压力</span>
+                                <span class="metric-status normal">✓ 正常</span>
+                            </div>
+                            <div class="metric-value">0.35<span class="metric-unit">MPa</span></div>
+                            <div class="metric-info">
+                                <span>阈值：0.25-0.45 MPa</span>
+                                <span>🕐 10:40</span>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">出厂流量</span>
+                                <span class="metric-status normal">✓ 正常</span>
+                            </div>
+                            <div class="metric-value">1250<span class="metric-unit">m³/h</span></div>
+                            <div class="metric-info">
+                                <span>阈值：800-1500 m³/h</span>
+                                <span>🕐 10:40</span>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">余氯</span>
+                                <span class="metric-status normal">✓ 正常</span>
+                            </div>
+                            <div class="metric-value">0.45<span class="metric-unit">mg/L</span></div>
+                            <div class="metric-info">
+                                <span>阈值：0.3-0.8 mg/L</span>
+                                <span>🕐 10:40</span>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">浊度</span>
+                                <span class="metric-status normal">✓ 正常</span>
+                            </div>
+                            <div class="metric-value">0.15<span class="metric-unit">NTU</span></div>
+                            <div class="metric-info">
+                                <span>阈值：≤1.0 NTU</span>
+                                <span>🕐 10:40</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -680,51 +734,217 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>名称</label>
-                    <input type="text" value="第一水厂">
+                    <input type="text" id="basic-name" value="第一水厂">
                 </div>
                 <div class="form-group">
                     <label>编码</label>
-                    <input type="text" value="W-001">
+                    <input type="text" id="basic-code" value="W-001">
                 </div>
                 <div class="form-group">
                     <label>位置</label>
-                    <input type="text" value="桐乡市 XX 路 XX 号">
+                    <input type="text" id="basic-location" value="桐乡市 XX 路 XX 号">
                 </div>
                 <div class="form-group">
                     <label>状态</label>
-                    <select>
-                        <option>运行中</option>
-                        <option>停运</option>
-                        <option>维护</option>
+                    <select id="basic-status">
+                        <option value="running">运行中</option>
+                        <option value="stopped">停运</option>
+                        <option value="maintenance">维护</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>建设日期</label>
-                    <input type="date" value="2010-05-01">
+                    <input type="date" id="basic-buildDate" value="2010-05-01">
                 </div>
                 <div class="form-group">
                     <label>设计规模</label>
-                    <input type="text" value="10 万吨/日">
+                    <input type="text" id="basic-capacity" value="10 万吨/日">
                 </div>
                 <div class="form-group">
                     <label>工艺类型</label>
-                    <select>
-                        <option>常规处理</option>
-                        <option>深度处理</option>
-                        <option>膜处理</option>
+                    <select id="basic-process">
+                        <option value="normal">常规处理</option>
+                        <option value="advanced">深度处理</option>
+                        <option value="membrane">膜处理</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>归属组织</label>
-                    <select>
-                        <option>生产部</option>
-                        <option>运营部</option>
+                    <select id="basic-org">
+                        <option value="production">生产部</option>
+                        <option value="operation">运营部</option>
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" style="border-color: #d9d9d9; color: #333;" onclick="closeModal('editBasicModal')">取消</button>
                 <button class="btn btn-primary" onclick="saveBasicInfo()">💾 保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑地图位置模态框 -->
+    <div id="editMapModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📍 编辑地图位置</h3>
+                <button class="modal-close" onclick="closeModal('editMapModal')">×</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>经度</label>
+                    <input type="number" id="map-longitude" value="120.55" step="0.0001">
+                </div>
+                <div class="form-group">
+                    <label>纬度</label>
+                    <input type="number" id="map-latitude" value="30.63" step="0.0001">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>地图服务商</label>
+                    <select id="map-provider">
+                        <option value="gaode">高德地图</option>
+                        <option value="baidu">百度地图</option>
+                        <option value="google">Google 地图</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top: 16px; padding: 16px; background: #f0f5ff; border-radius: 6px; font-size: 13px; color: #666;">
+                💡 提示：可以在地图上拾取坐标，或手动输入经纬度。
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" style="border-color: #d9d9d9; color: #333;" onclick="closeModal('editMapModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveMapLocation()">💾 保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 管理监测指标模态框 -->
+    <div id="editMetricsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📊 管理监测指标</h3>
+                <button class="modal-close" onclick="closeModal('editMetricsModal')">×</button>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <button class="btn btn-primary" onclick="addNewMetric()">➕ 新增指标</button>
+            </div>
+            <div class="table-container" style="max-height: 400px;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>指标名称</th>
+                            <th>编码</th>
+                            <th>单位</th>
+                            <th>阈值范围</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="metricsTableBody">
+                        <tr>
+                            <td>出厂压力</td>
+                            <td>pressure</td>
+                            <td>MPa</td>
+                            <td>0.25 - 0.45</td>
+                            <td><span class="metric-status normal">正常</span></td>
+                            <td>
+                                <button class="btn-sm" onclick="editMetricConfig('pressure')">✏️</button>
+                                <button class="btn-sm" onclick="deleteMetricConfig('pressure')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>出厂流量</td>
+                            <td>flow</td>
+                            <td>m³/h</td>
+                            <td>800 - 1500</td>
+                            <td><span class="metric-status normal">正常</span></td>
+                            <td>
+                                <button class="btn-sm" onclick="editMetricConfig('flow')">✏️</button>
+                                <button class="btn-sm" onclick="deleteMetricConfig('flow')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>余氯</td>
+                            <td>chlorine</td>
+                            <td>mg/L</td>
+                            <td>0.3 - 0.8</td>
+                            <td><span class="metric-status normal">正常</span></td>
+                            <td>
+                                <button class="btn-sm" onclick="editMetricConfig('chlorine')">✏️</button>
+                                <button class="btn-sm" onclick="deleteMetricConfig('chlorine')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>浊度</td>
+                            <td>turbidity</td>
+                            <td>NTU</td>
+                            <td>0 - 1.0</td>
+                            <td><span class="metric-status normal">正常</span></td>
+                            <td>
+                                <button class="btn-sm" onclick="editMetricConfig('turbidity')">✏️</button>
+                                <button class="btn-sm" onclick="deleteMetricConfig('turbidity')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>pH 值</td>
+                            <td>ph</td>
+                            <td>-</td>
+                            <td>6.5 - 8.5</td>
+                            <td><span class="metric-status normal">正常</span></td>
+                            <td>
+                                <button class="btn-sm" onclick="editMetricConfig('ph')">✏️</button>
+                                <button class="btn-sm" onclick="deleteMetricConfig('ph')" style="color: #ff4d4f; border-color: #ffa39e;">🗑️</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" style="border-color: #d9d9d9; color: #333;" onclick="closeModal('editMetricsModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑指标配置模态框 -->
+    <div id="editMetricConfigModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ 编辑指标配置</h3>
+                <button class="modal-close" onclick="closeModal('editMetricConfigModal')">×</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>指标名称</label>
+                    <input type="text" id="metric-name" placeholder="如：出厂压力">
+                </div>
+                <div class="form-group">
+                    <label>指标编码</label>
+                    <input type="text" id="metric-code" placeholder="如：pressure">
+                </div>
+                <div class="form-group">
+                    <label>单位</label>
+                    <input type="text" id="metric-unit" placeholder="如：MPa">
+                </div>
+                <div class="form-group">
+                    <label>最小阈值</label>
+                    <input type="number" id="metric-min" step="0.01" placeholder="如：0.25">
+                </div>
+                <div class="form-group">
+                    <label>最大阈值</label>
+                    <input type="number" id="metric-max" step="0.01" placeholder="如：0.45">
+                </div>
+                <div class="form-group">
+                    <label>数据源</label>
+                    <select id="metric-source">
+                        <option>实时采集</option>
+                        <option>人工录入</option>
+                        <option>计算得出</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" style="border-color: #d9d9d9; color: #333;" onclick="closeModal('editMetricConfigModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveMetricConfig()">💾 保存</button>
             </div>
         </div>
     </div>
@@ -758,8 +978,90 @@
         
         // 保存基础信息
         function saveBasicInfo() {
-            alert('基础信息已保存！');
+            const name = document.getElementById('basic-name').value;
+            const code = document.getElementById('basic-code').value;
+            const location = document.getElementById('basic-location').value;
+            const status = document.getElementById('basic-status').value;
+            const buildDate = document.getElementById('basic-buildDate').value;
+            const capacity = document.getElementById('basic-capacity').value;
+            const process = document.getElementById('basic-process').value;
+            const org = document.getElementById('basic-org').value;
+            
+            console.log('保存基础信息:', { name, code, location, status, buildDate, capacity, process, org });
+            alert('✅ 基础信息已保存！');
             closeModal('editBasicModal');
+        }
+        
+        // 编辑地图位置
+        function editMapLocation() {
+            document.getElementById('editMapModal').classList.add('active');
+        }
+        
+        // 保存地图位置
+        function saveMapLocation() {
+            const longitude = document.getElementById('map-longitude').value;
+            const latitude = document.getElementById('map-latitude').value;
+            const provider = document.getElementById('map-provider').value;
+            
+            console.log('保存地图位置:', { longitude, latitude, provider });
+            alert(`✅ 地图位置已保存！\n经度：${longitude}\n纬度：${latitude}\n服务商：${provider === 'gaode' ? '高德地图' : provider === 'baidu' ? '百度地图' : 'Google 地图'}`);
+            closeModal('editMapModal');
+        }
+        
+        // 编辑监测指标
+        function editMetrics() {
+            document.getElementById('editMetricsModal').classList.add('active');
+        }
+        
+        // 新增指标
+        function addNewMetric() {
+            document.getElementById('metric-name').value = '';
+            document.getElementById('metric-code').value = '';
+            document.getElementById('metric-unit').value = '';
+            document.getElementById('metric-min').value = '';
+            document.getElementById('metric-max').value = '';
+            document.getElementById('editMetricConfigModal').classList.add('active');
+        }
+        
+        // 编辑指标配置
+        function editMetricConfig(metricId) {
+            const metrics = {
+                'pressure': { name: '出厂压力', code: 'pressure', unit: 'MPa', min: 0.25, max: 0.45 },
+                'flow': { name: '出厂流量', code: 'flow', unit: 'm³/h', min: 800, max: 1500 },
+                'chlorine': { name: '余氯', code: 'chlorine', unit: 'mg/L', min: 0.3, max: 0.8 },
+                'turbidity': { name: '浊度', code: 'turbidity', unit: 'NTU', min: 0, max: 1.0 },
+                'ph': { name: 'pH 值', code: 'ph', unit: '-', min: 6.5, max: 8.5 }
+            };
+            
+            const metric = metrics[metricId];
+            document.getElementById('metric-name').value = metric.name;
+            document.getElementById('metric-code').value = metric.code;
+            document.getElementById('metric-unit').value = metric.unit;
+            document.getElementById('metric-min').value = metric.min;
+            document.getElementById('metric-max').value = metric.max;
+            
+            document.getElementById('editMetricConfigModal').classList.add('active');
+        }
+        
+        // 保存指标配置
+        function saveMetricConfig() {
+            const name = document.getElementById('metric-name').value;
+            const code = document.getElementById('metric-code').value;
+            const unit = document.getElementById('metric-unit').value;
+            const min = document.getElementById('metric-min').value;
+            const max = document.getElementById('metric-max').value;
+            
+            console.log('保存指标配置:', { name, code, unit, min, max });
+            alert(`✅ 指标配置已保存！\n名称：${name}\n编码：${code}\n单位：${unit}\n阈值：${min} - ${max}`);
+            closeModal('editMetricConfigModal');
+        }
+        
+        // 删除指标配置
+        function deleteMetricConfig(metricId) {
+            if (confirm(`确定删除指标 "${metricId}" 吗？\n\n删除后将不再监测该指标数据。`)) {
+                alert('✅ 指标已删除！');
+                // 实际应用中需要刷新表格
+            }
         }
         
         // 关闭模态框
