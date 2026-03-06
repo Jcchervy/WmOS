@@ -209,6 +209,7 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn btn-outline" onclick="openEntitySettings()" style="padding: 6px 12px;">⚙️ 设置</button>
                 <button class="btn btn-outline" onclick="refreshAll()">⟳ 刷新</button>
             </div>
         </div>
@@ -1467,9 +1468,91 @@
         // 窗口大小变化时调整图表
         window.addEventListener('resize', () => { if (mainChart) mainChart.resize(); });
         
+        // 实体设置
+        function openEntitySettings() {
+            loadEntitySettings();
+            document.getElementById('entitySettingsModal').classList.add('active');
+        }
+        
+        function loadEntitySettings() {
+            const settings = JSON.parse(localStorage.getItem('entitySettings') || '{}');
+            if (settings.tabs) {
+                document.getElementById('tabBasic').checked = settings.tabs.basic !== false;
+                document.getElementById('tabData').checked = settings.tabs.data !== false;
+                document.getElementById('tabNetwork').checked = settings.tabs.network !== false;
+                document.getElementById('tabIndicators').checked = settings.tabs.indicators !== false;
+                document.getElementById('tabReports').checked = settings.tabs.reports !== false;
+                document.getElementById('tabAlerts').checked = settings.tabs.alerts !== false;
+            }
+            if (settings.entityName) document.getElementById('entityName').value = settings.entityName;
+            if (settings.entityType) document.getElementById('entityType').value = settings.entityType;
+            if (settings.defaultView !== undefined) document.getElementById('defaultView').checked = settings.defaultView;
+            if (settings.autoRefresh !== undefined) document.getElementById('autoRefresh').checked = settings.autoRefresh;
+        }
+        
+        function saveEntitySettings() {
+            const settings = {
+                tabs: {
+                    basic: document.getElementById('tabBasic').checked,
+                    data: document.getElementById('tabData').checked,
+                    network: document.getElementById('tabNetwork').checked,
+                    indicators: document.getElementById('tabIndicators').checked,
+                    reports: document.getElementById('tabReports').checked,
+                    alerts: document.getElementById('tabAlerts').checked
+                },
+                entityName: document.getElementById('entityName').value,
+                entityType: document.getElementById('entityType').value,
+                defaultView: document.getElementById('defaultView').checked,
+                autoRefresh: document.getElementById('autoRefresh').checked
+            };
+            localStorage.setItem('entitySettings', JSON.stringify(settings));
+            applyEntitySettings(settings);
+            closeModal('entitySettingsModal');
+            alert('设置已保存！');
+        }
+        
+        function applyEntitySettings(settings) {
+            // 更新实体名称
+            if (settings.entityName) {
+                document.querySelector('h1').innerHTML = '🏭 ' + settings.entityName + ' <span class="status-badge"><span class="status-dot"></span>运行中</span>';
+            }
+            
+            // 更新 Tab 显示
+            const tabs = [
+                { id: 'basic', tab: document.querySelectorAll('.tab')[0], pane: document.getElementById('basic-tab') },
+                { id: 'data', tab: document.querySelectorAll('.tab')[1], pane: document.getElementById('data-tab') },
+                { id: 'network', tab: document.querySelectorAll('.tab')[2], pane: document.getElementById('network-tab') },
+                { id: 'indicators', tab: document.querySelectorAll('.tab')[3], pane: document.getElementById('indicators-tab') },
+                { id: 'reports', tab: document.querySelectorAll('.tab')[4], pane: document.getElementById('reports-tab') },
+                { id: 'alerts', tab: document.querySelectorAll('.tab')[5], pane: document.getElementById('alerts-tab') }
+            ];
+            
+            tabs.forEach(item => {
+                const visible = settings.tabs[item.id] !== false;
+                if (item.tab) item.tab.style.display = visible ? 'block' : 'none';
+                if (item.pane) item.pane.style.display = visible ? 'block' : 'none';
+            });
+            
+            // 如果当前 Tab 被隐藏，切换到第一个可见的 Tab
+            const activePane = document.querySelector('.tab-pane.active');
+            if (activePane && activePane.style.display === 'none') {
+                const firstVisible = tabs.find(t => t.pane && t.pane.style.display !== 'none');
+                if (firstVisible) switchTab(firstVisible.id);
+            }
+        }
+        
+        function resetSettings() {
+            localStorage.removeItem('entitySettings');
+            loadEntitySettings();
+            alert('设置已恢复默认！');
+        }
+        
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 不自动初始化图表，等切换到 Tab 时再初始化
+            const settings = JSON.parse(localStorage.getItem('entitySettings') || '{}');
+            if (Object.keys(settings).length > 0) {
+                applyEntitySettings(settings);
+            }
         });
     </script>
 </body>
