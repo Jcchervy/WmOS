@@ -25,6 +25,25 @@
         .btn-outline:hover { background: rgba(255,255,255,0.1); }
         .btn-edit { padding: 4px 12px; font-size: 12px; margin-left: 8px; }
         
+        /* 多媒体展示 */
+        .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 16px; }
+        .media-item { border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; transition: all 0.3s; }
+        .media-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-2px); }
+        .media-item img, .media-item video { width: 100%; height: 150px; object-fit: cover; }
+        .media-item .media-caption { padding: 10px; font-size: 13px; color: #666; background: #fafafa; }
+        .media-item .media-actions { padding: 8px; display: flex; gap: 8px; justify-content: center; background: white; }
+        .media-item .media-actions button { flex: 1; padding: 6px; font-size: 12px; }
+        .doc-item { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #e8e8e8; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s; }
+        .doc-item:hover { background: #f5f5f5; border-color: #1890ff; }
+        .doc-icon { font-size: 24px; }
+        .doc-info { flex: 1; }
+        .doc-name { font-size: 14px; font-weight: 500; color: #333; }
+        .doc-size { font-size: 12px; color: #999; }
+        .rich-text { border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px; background: #fafafa; line-height: 1.8; }
+        .rich-text h3 { margin-bottom: 12px; color: #1890ff; }
+        .rich-text ul, .rich-text ol { margin-left: 20px; margin-bottom: 12px; }
+        .rich-text blockquote { border-left: 4px solid #1890ff; padding-left: 16px; color: #666; background: white; padding: 12px; margin: 12px 0; }
+        
         /* Tab 导航 */
         .tabs { background: white; padding: 0 24px; border-bottom: 2px solid #e8e8e8; display: flex; gap: 0; overflow-x: auto; }
         .tab { padding: 16px 24px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; font-size: 14px; color: #666; white-space: nowrap; }
@@ -277,6 +296,96 @@
                             <div style="font-size: 48px; margin-bottom: 16px;">🗺️</div>
                             <div>地图集成区域</div>
                             <div style="font-size: 12px; margin-top: 8px; color: #888;">经纬度：120.55, 30.63 | 支持高德/百度/Google 地图</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 多媒体资料 -->
+                <div style="margin-top: 32px;">
+                    <div class="section-title" style="margin-bottom: 16px;">📁 相关资料</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <!-- 图片/视频 -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-weight: 500; color: #666;">📷 图片视频</span>
+                                <button class="btn btn-primary btn-sm" onclick="alert('上传功能')">➕ 上传</button>
+                            </div>
+                            <div class="media-grid">
+                                <div class="media-item">
+                                    <img src="https://via.placeholder.com/300x200/1890ff/ffffff?text=水厂全景" alt="水厂全景">
+                                    <div class="media-caption">水厂全景图</div>
+                                    <div class="media-actions">
+                                        <button class="btn btn-outline btn-sm" onclick="alert('查看大图')">👁️</button>
+                                        <button class="btn btn-outline btn-sm" onclick="alert('删除')">🗑️</button>
+                                    </div>
+                                </div>
+                                <div class="media-item">
+                                    <img src="https://via.placeholder.com/300x200/52c41a/ffffff?text=泵房" alt="泵房">
+                                    <div class="media-caption">泵房内部</div>
+                                    <div class="media-actions">
+                                        <button class="btn btn-outline btn-sm" onclick="alert('查看大图')">👁️</button>
+                                        <button class="btn btn-outline btn-sm" onclick="alert('删除')">🗑️</button>
+                                    </div>
+                                </div>
+                                <div class="media-item">
+                                    <video style="background: #000;">
+                                        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                                    </video>
+                                    <div class="media-caption">巡检视频</div>
+                                    <div class="media-actions">
+                                        <button class="btn btn-outline btn-sm" onclick="alert('播放视频')">▶️</button>
+                                        <button class="btn btn-outline btn-sm" onclick="alert('删除')">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 文档/富文本 -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-weight: 500; color: #666;">📄 文档资料</span>
+                                <button class="btn btn-primary btn-sm" onclick="alert('上传功能')">➕ 上传</button>
+                            </div>
+                            <div class="doc-item">
+                                <div class="doc-icon">📊</div>
+                                <div class="doc-info">
+                                    <div class="doc-name">水厂设计规范.pdf</div>
+                                    <div class="doc-size">2.5 MB · 2026-03-01</div>
+                                </div>
+                                <button class="btn btn-outline btn-sm" onclick="alert('下载')">📥</button>
+                            </div>
+                            <div class="doc-item">
+                                <div class="doc-icon">📋</div>
+                                <div class="doc-info">
+                                    <div class="doc-name">设备清单.xlsx</div>
+                                    <div class="doc-size">156 KB · 2026-02-28</div>
+                                </div>
+                                <button class="btn btn-outline btn-sm" onclick="alert('下载')">📥</button>
+                            </div>
+                            <div class="doc-item">
+                                <div class="doc-icon">📝</div>
+                                <div class="doc-info">
+                                    <div class="doc-name">巡检记录.docx</div>
+                                    <div class="doc-size">89 KB · 2026-02-25</div>
+                                </div>
+                                <button class="btn btn-outline btn-sm" onclick="alert('下载')">📥</button>
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <span style="font-weight: 500; color: #666;">📝 备注说明</span>
+                                    <button class="btn btn-primary btn-sm" onclick="alert('编辑富文本')">✏️ 编辑</button>
+                                </div>
+                                <div class="rich-text">
+                                    <h3>水厂简介</h3>
+                                    <p>第一水厂建于 1985 年，设计供水规模 10 万 m³/d，主要服务于 XX 区。</p>
+                                    <ul>
+                                        <li>占地面积：50 亩</li>
+                                        <li>主要工艺：常规处理 + 深度处理</li>
+                                        <li>服务人口：约 30 万人</li>
+                                    </ul>
+                                    <blockquote>注：2025 年完成了深度处理改造，增加了臭氧 - 活性炭工艺。</blockquote>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
