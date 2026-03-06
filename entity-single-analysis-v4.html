@@ -200,23 +200,26 @@
         <!-- 头部 -->
         <div class="header">
             <div class="header-left">
-                <h1>🏭 第一水厂</h1>
-                <div class="header-meta">
-                    <span>实体类型：水厂</span>
-                    <span class="status-badge"><span class="status-dot"></span>运行中</span>
-                    <span>最后更新：<span id="lastUpdate">2026-03-06 14:30</span></span>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <button class="btn btn-outline" onclick="goBack()" style="padding: 6px 12px; font-size: 16px;">← 返回</button>
+                    <div>
+                        <h1>🏭 第一水厂</h1>
+                        <div class="header-meta">
+                            <span>实体类型：水厂</span>
+                            <span class="status-badge"><span class="status-dot"></span>运行中</span>
+                            <span>最后更新：<span id="lastUpdate">2026-03-06 14:30</span></span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="header-actions">
                 <button class="btn btn-outline" onclick="refreshAll()">⟳ 刷新</button>
-                <button class="btn btn-primary" onclick="alert('导出功能')">📥 导出</button>
             </div>
         </div>
         
         <!-- Tab 导航 -->
         <div class="tabs">
             <div class="tab active" onclick="switchTab('basic')">📋 基础信息</div>
-            <div class="tab" onclick="switchTab('metrics')">📊 监测指标</div>
             <div class="tab" onclick="switchTab('data')">📈 监测数据</div>
             <div class="tab" onclick="switchTab('network')">🔗 网络关系</div>
             <div class="tab" onclick="switchTab('indicators')">📉 指标数据</div>
@@ -373,112 +376,7 @@
                 </div>
             </div>
             
-            <!-- Tab 2: 监测指标 -->
-            <div id="metrics-tab" class="tab-pane">
-                <div class="section-title">
-                    <span>监测指标配置</span>
-                    <button class="btn btn-primary btn-edit" onclick="addMetric()">➕ 新增指标</button>
-                </div>
-                <div class="metrics-toolbar">
-                    <div class="view-toggle">
-                        <button class="view-btn active">📊 卡片视图</button>
-                        <button class="view-btn" onclick="alert('列表视图')">📋 列表视图</button>
-                    </div>
-                    <div style="font-size: 13px; color: #888;">共 6 个监测指标</div>
-                </div>
-                <div class="metrics-grid">
-                    <div class="metric-item">
-                        <div class="metric-header">
-                            <span class="metric-name">出厂压力</span>
-                            <div class="metric-actions">
-                                <button class="btn-sm" onclick="editMetric('pressure')">✏️</button>
-                                <button class="btn-sm" onclick="deleteMetric('pressure')">🗑️</button>
-                            </div>
-                        </div>
-                        <div class="metric-value">0.35<span class="metric-unit">MPa</span></div>
-                        <div class="metric-status normal">✓ 正常</div>
-                        <div class="metric-info">
-                            <span>阈值：0.25-0.45 MPa</span>
-                            <span>更新：10:40</span>
-                        </div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-header">
-                            <span class="metric-name">出厂流量</span>
-                            <div class="metric-actions">
-                                <button class="btn-sm" onclick="editMetric('flow')">✏️</button>
-                                <button class="btn-sm" onclick="deleteMetric('flow')">🗑️</button>
-                            </div>
-                        </div>
-                        <div class="metric-value">1250<span class="metric-unit">m³/h</span></div>
-                        <div class="metric-status normal">✓ 正常</div>
-                        <div class="metric-info">
-                            <span>阈值：800-1500 m³/h</span>
-                            <span>更新：10:40</span>
-                        </div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-header">
-                            <span class="metric-name">余氯</span>
-                            <div class="metric-actions">
-                                <button class="btn-sm" onclick="editMetric('chlorine')">✏️</button>
-                                <button class="btn-sm" onclick="deleteMetric('chlorine')">🗑️</button>
-                            </div>
-                        </div>
-                        <div class="metric-value">0.45<span class="metric-unit">mg/L</span></div>
-                        <div class="metric-status normal">✓ 正常</div>
-                        <div class="metric-info">
-                            <span>阈值：0.3-0.8 mg/L</span>
-                            <span>更新：10:40</span>
-                        </div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-header">
-                            <span class="metric-name">浊度</span>
-                            <div class="metric-actions">
-                                <button class="btn-sm" onclick="editMetric('turbidity')">✏️</button>
-                                <button class="btn-sm" onclick="deleteMetric('turbidity')">🗑️</button>
-                            </div>
-                        </div>
-                        <div class="metric-value">0.15<span class="metric-unit">NTU</span></div>
-                        <div class="metric-status normal">✓ 正常</div>
-                        <div class="metric-info">
-                            <span>阈值：≤1.0 NTU</span>
-                            <span>更新：10:40</span>
-                        </div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-header">
-                            <span class="metric-name">pH 值</span>
-                            <div class="metric-actions">
-                                <button class="btn-sm" onclick="editMetric('ph')">✏️</button>
-                                <button class="btn-sm" onclick="deleteMetric('ph')">🗑️</button>
-                            </div>
-                        </div>
-                        <div class="metric-value">7.2</div>
-                        <div class="metric-status normal">✓ 正常</div>
-                        <div class="metric-info">
-                            <span>阈值：6.5-8.5</span>
-                            <span>更新：10:40</span>
-                        </div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-header">
-                            <span class="metric-name">今日水量</span>
-                            <div class="metric-actions">
-                                <button class="btn-sm" onclick="editMetric('daily')">✏️</button>
-                                <button class="btn-sm" onclick="deleteMetric('daily')">🗑️</button>
-                            </div>
-                        </div>
-                        <div class="metric-value">8500<span class="metric-unit">m³</span></div>
-                        <div class="metric-status normal">✓ 正常</div>
-                        <div class="metric-info">
-                            <span>日均：8000 m³</span>
-                            <span>更新：10:40</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             
             <!-- Tab 3: 监测数据 -->
             <div id="data-tab" class="tab-pane">
@@ -1335,6 +1233,14 @@
         // 导出报表
         function exportReport() {
             alert('正在导出 Excel 报表...');
+        }
+        
+        // 返回
+        function goBack() {
+            if (confirm('确定要返回吗？')) {
+                window.history.back();
+                // 或者直接跳转到列表页：window.location.href = '/entities.html';
+            }
         }
         
         // 刷新全部
