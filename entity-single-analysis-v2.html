@@ -186,6 +186,55 @@
             gap: 8px;
             margin-bottom: 16px;
             flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .date-input {
+            padding: 6px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #333;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .date-input:hover {
+            border-color: #1890ff;
+        }
+        
+        .date-input:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+        }
+        
+        .quick-dates {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-date-btn {
+            padding: 4px 12px;
+            border: 1px solid #d9d9d9;
+            background: #fafafa;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .quick-date-btn:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+        
+        .quick-date-btn.active {
+            background: #1890ff;
+            border-color: #1890ff;
+            color: white;
         }
         
         .time-range-btn {
@@ -813,7 +862,28 @@
                     <button class="time-range-btn" data-range="24h">24 小时</button>
                     <button class="time-range-btn" data-range="7d">7 天</button>
                     <button class="time-range-btn" data-range="30d">30 天</button>
-                    <button class="time-range-btn" data-range="custom">自定义</button>
+                    <button class="time-range-btn" data-range="custom" onclick="showDateRangePicker()">📅 自定义</button>
+                    
+                    <!-- 自定义日期范围选择器 -->
+                    <div id="customDateRangePicker" style="display: none; gap: 8px; align-items: center; margin-left: 10px; padding: 12px; background: #fafafa; border-radius: 6px; border: 1px solid #e8e8e8;">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <label style="font-size: 13px; color: #666;">开始日期：</label>
+                                <input type="date" id="startDate" class="date-input">
+                                <label style="font-size: 13px; color: #666; margin-left: 16px;">结束日期：</label>
+                                <input type="date" id="endDate" class="date-input">
+                                <button class="time-range-btn active" onclick="queryByDateRange()" style="margin-left: 8px;">查询</button>
+                                <button class="time-range-btn" onclick="hideDateRangePicker()">✕</button>
+                            </div>
+                            <div class="quick-dates">
+                                <span style="font-size: 12px; color: #888; align-self: center;">快捷选择：</span>
+                                <button class="quick-date-btn" onclick="selectQuickDate(1)">最近 1 天</button>
+                                <button class="quick-date-btn" onclick="selectQuickDate(7)">最近 7 天</button>
+                                <button class="quick-date-btn" onclick="selectQuickDate(30)">最近 30 天</button>
+                                <button class="quick-date-btn" onclick="selectQuickDate(90)">最近 90 天</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- 指标选择 -->
@@ -1161,8 +1231,105 @@
             return data;
         }
         
+        // 当前选中的日期范围
+        let currentCustomRange = {
+            start: null,
+            end: null
+        };
+        
+        // 显示日期范围选择器
+        function showDateRangePicker() {
+            document.getElementById('customDateRangePicker').style.display = 'flex';
+            
+            // 默认设置为最近 7 天
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 7);
+            
+            document.getElementById('endDate').valueAsDate = endDate;
+            document.getElementById('startDate').valueAsDate = startDate;
+        }
+        
+        // 隐藏日期范围选择器
+        function hideDateRangePicker() {
+            document.getElementById('customDateRangePicker').style.display = 'none';
+        }
+        
+        // 按日期范围查询
+        function queryByDateRange() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('请选择开始和结束日期');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('开始日期不能晚于结束日期');
+                return;
+            }
+            
+            currentCustomRange = { start: startDate, end: endDate };
+            
+            // 取消其他按钮的激活状态
+            document.querySelectorAll('.time-range-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 设置自定义按钮为激活状态
+            event.target.classList.add('active');
+            
+            // 更新图表和表格
+            if (currentView === 'chart') {
+                updateMainChart();
+            } else {
+                generateTable();
+            }
+            
+            // 隐藏选择器
+            hideDateRangePicker();
+        }
+        
+        // 快捷日期选择
+        function selectQuickDate(days) {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+            
+            document.getElementById('endDate').valueAsDate = endDate;
+            document.getElementById('startDate').valueAsDate = startDate;
+            
+            // 更新快捷按钮状态
+            document.querySelectorAll('.quick-date-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
         // 生成时间标签
         function generateTimeLabels(range) {
+            // 如果是自定义日期范围
+            if (range === 'custom' && currentCustomRange.start && currentCustomRange.end) {
+                const startDate = new Date(currentCustomRange.start);
+                const endDate = new Date(currentCustomRange.end);
+                const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                
+                const labels = [];
+                const points = daysDiff <= 1 ? 24 : daysDiff <= 7 ? daysDiff : 30;
+                
+                for (let i = 0; i <= daysDiff; i++) {
+                    const time = new Date(startDate.getTime() + i * 86400000);
+                    if (daysDiff <= 1) {
+                        labels.push(time.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'}));
+                    } else {
+                        labels.push(time.toLocaleDateString('zh-CN', {month: '2-digit', day:'2-digit'}));
+                    }
+                }
+                return labels;
+            }
+            
+            // 默认逻辑
             const points = range === '1h' ? 60 : range === '24h' ? 24 : range === '7d' ? 7 : 30;
             const labels = [];
             const now = new Date();
@@ -1326,6 +1493,48 @@
         function generateTable() {
             const tbody = document.getElementById('dataTableBody');
             const range = document.querySelector('.time-range-btn.active').dataset.range;
+            
+            // 如果是自定义日期范围
+            if (range === 'custom' && currentCustomRange.start && currentCustomRange.end) {
+                const startDate = new Date(currentCustomRange.start);
+                const endDate = new Date(currentCustomRange.end);
+                const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                
+                let html = '';
+                const points = daysDiff <= 1 ? 24 : daysDiff <= 7 ? daysDiff * 24 : 30;
+                
+                for (let i = 0; i < Math.min(points, 100); i++) {
+                    let time;
+                    if (daysDiff <= 1) {
+                        time = new Date(startDate.getTime() + i * 3600000); // 每小时
+                    } else {
+                        time = new Date(startDate.getTime() + i * 3600000); // 每小时
+                    }
+                    const timeStr = time.toLocaleString('zh-CN');
+                    
+                    const pressure = (0.35 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                    const flow = Math.round(1250 + (Math.random() - 0.5) * 100);
+                    const chlorine = (0.45 + (Math.random() - 0.5) * 0.1).toFixed(2);
+                    const turbidity = (0.15 + (Math.random() - 0.5) * 0.05).toFixed(2);
+                    const ph = (7.2 + (Math.random() - 0.5) * 0.3).toFixed(1);
+                    
+                    html += `
+                        <tr>
+                            <td>${timeStr}</td>
+                            <td>${pressure}</td>
+                            <td>${flow}</td>
+                            <td>-</td>
+                            <td>${chlorine}</td>
+                            <td>${turbidity}</td>
+                            <td>${ph}</td>
+                        </tr>
+                    `;
+                }
+                tbody.innerHTML = html;
+                return;
+            }
+            
+            // 默认逻辑
             const points = range === '1h' ? 10 : range === '24h' ? 12 : 7;
             const now = new Date();
             
