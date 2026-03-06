@@ -1102,6 +1102,85 @@
                 <button class="btn btn-primary" onclick="saveMetricConfig()">💾 保存</button>
             </div>
         </div>
+        
+        <!-- 实体设置模态框 -->
+        <div id="entitySettingsModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2 class="modal-title">⚙️ 实体单点分析设置</h2>
+                    <button class="modal-close" onclick="closeModal('entitySettingsModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label style="font-weight: 600; margin-bottom: 12px; display: block;">📋 显示模块设置</label>
+                        <p style="color: #666; font-size: 13px; margin-bottom: 12px;">勾选需要在单点分析页面显示的 Tab 模块</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px; cursor: pointer;">
+                                <input type="checkbox" id="tabBasic" checked style="accent-color: #1890ff;">
+                                <span>📋 基础信息</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px; cursor: pointer;">
+                                <input type="checkbox" id="tabData" checked style="accent-color: #1890ff;">
+                                <span>📈 监测数据</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px; cursor: pointer;">
+                                <input type="checkbox" id="tabNetwork" checked style="accent-color: #1890ff;">
+                                <span>🔗 网络关系</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px; cursor: pointer;">
+                                <input type="checkbox" id="tabIndicators" checked style="accent-color: #1890ff;">
+                                <span>📉 指标数据</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px; cursor: pointer;">
+                                <input type="checkbox" id="tabReports" checked style="accent-color: #1890ff;">
+                                <span>📑 综合报表</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px; cursor: pointer;">
+                                <input type="checkbox" id="tabAlerts" checked style="accent-color: #1890ff;">
+                                <span>🚨 报警记录</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight: 600; margin-bottom: 12px; display: block;">🏷️ 实体基本信息</label>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>实体名称</label>
+                                <input type="text" id="entityName" class="form-control" value="第一水厂">
+                            </div>
+                            <div class="form-group">
+                                <label>实体类型</label>
+                                <select id="entityType" class="form-control">
+                                    <option value="water_plant">水厂</option>
+                                    <option value="pump_station">泵站</option>
+                                    <option value="tank">水池</option>
+                                    <option value="valve">阀门</option>
+                                    <option value="meter">仪表</option>
+                                    <option value="pipe">管网</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight: 600; margin-bottom: 12px; display: block;">🎨 显示偏好</label>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="defaultView" checked style="accent-color: #1890ff;">
+                                <span>默认使用卡片视图（而非列表）</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="autoRefresh" style="accent-color: #1890ff;">
+                                <span>启用自动刷新（每 5 分钟）</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="resetSettings()">🔄 恢复默认</button>
+                    <button class="btn btn-primary" onclick="saveEntitySettings()">💾 保存设置</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script>
